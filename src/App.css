@@ -82,7 +82,7 @@
 .gn-btn--active { background: color-mix(in srgb, var(--gc, #c9a84c) 15%, #122440); border-color: var(--gc, #c9a84c); color: var(--gc, #c9a84c); }
 
 /* MAIN */
-.main { flex: 1; max-width: 1400px; width: 100%; margin: 0 auto; padding: 20px 20px 100px; }
+.main { flex: 1; max-width: 1400px; width: 100%; margin: 0 auto; padding: 20px; }
 .groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); gap: 20px; }
 .groups-grid--single { grid-template-columns: 1fr; max-width: 720px; }
 
@@ -90,10 +90,6 @@
 .footer { text-align: center; padding: 16px; color: #2e4870; font-size: 11px; border-top: 1px solid #0d1e35; }
 .footer a { color: #4a6a90; text-decoration: none; }
 .footer a:hover { color: #7a92b0; }
-
-.gn-divider { width: 1px; background: #1e3355; align-self: stretch; margin: 0 2px; }
-.gn-btn--view { border-color: #2a3f5a; }
-.gn-btn--myteams.gn-btn--active { --gc: #22c55e; }
 
 @media (max-width: 500px) {
   .header-title { font-size: 18px; }
