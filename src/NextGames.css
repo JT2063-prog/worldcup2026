@@ -1,0 +1,151 @@
+/* Next Games bottom bar */
+.next-games-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 200;
+  background: linear-gradient(180deg, #050c1a 0%, #060d1a 100%);
+  border-top: 1px solid #1e3355;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  height: 70px;
+  padding: 0 6px 0 0;
+  /* Safe area for iPhone notch */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.ngb-label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #2e4870;
+  padding: 0 8px;
+  flex-shrink: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #1a2e4a;
+  min-width: 24px;
+}
+
+.ngb-label--live {
+  color: #22c55e;
+  animation: pulse 1.5s infinite;
+}
+
+.ngb-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 8px 10px;
+  flex: 1;
+  align-items: center;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.ngb-scroll::-webkit-scrollbar { display: none; }
+
+/* Individual game chip */
+.ngc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: #0d1e35;
+  border: 1px solid #1e3355;
+  border-top: 2px solid var(--gc, #c9a84c);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  min-width: 76px;
+}
+
+.ngc:hover {
+  background: #122440;
+  border-color: color-mix(in srgb, var(--gc) 50%, #1e3355);
+}
+
+.ngc--live {
+  border-top-color: #22c55e !important;
+  background: rgba(34,197,94,0.06);
+  box-shadow: 0 0 8px rgba(34,197,94,0.1);
+}
+
+.ngc--done {
+  opacity: 0.65;
+}
+
+.ngc-group {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--gc, #c9a84c);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.ngc-matchup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+}
+
+.ngc-flag { font-size: 15px; line-height: 1; }
+
+.ngc-time {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #7a92b0;
+  white-space: nowrap;
+  min-width: 34px;
+  text-align: center;
+}
+
+.ngc-live-score {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  color: #22c55e;
+  white-space: nowrap;
+  min-width: 30px;
+  text-align: center;
+}
+
+.ngc-final-score {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  color: #c8d8ec;
+  white-space: nowrap;
+  min-width: 30px;
+  text-align: center;
+}
+
+.ngc-sep {
+  font-size: 11px;
+  color: #3a5270;
+  margin: 0 1px;
+}
+
+.ngc-phase-dot {
+  font-size: 8px;
+  color: #22c55e;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  animation: pulse 1.5s infinite;
+}
+
+@media (max-width: 500px) {
+  .next-games-bar { height: 64px; }
+  .ngc { min-width: 66px; padding: 4px 6px; }
+  .ngc-flag { font-size: 13px; }
+  .ngc-time, .ngc-live-score, .ngc-final-score { font-size: 13px; }
+}

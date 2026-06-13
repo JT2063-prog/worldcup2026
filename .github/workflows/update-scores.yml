@@ -1,0 +1,35 @@
+name: Update World Cup Scores
+
+on:
+  schedule:
+    # Run every 60 minutes during tournament (June 11 – July 19 2026)
+    - cron: '*/60 * * 11-19 6,7 *'
+  workflow_dispatch: # Also allow manual trigger from GitHub
+
+jobs:
+  update-scores:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch scores and update data.js
+        env:
+          WC_API_KEY: ${{ secrets.WC_API_KEY }}
+        run: node .github/scripts/update-scores.js
+
+      - name: Commit and push if scores changed
+        run: |
+          git config user.name "WC2026 Bot"
+          git config user.email "bot@worldcup2026"
+          git add src/data.js
+          git diff --staged --quiet || git commit -m "Auto-update scores $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push

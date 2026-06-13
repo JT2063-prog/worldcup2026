@@ -1,0 +1,113 @@
+.bracket { padding: 0; }
+
+.bracket-tabs {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid #1a2e4a;
+  background: #0d1e35;
+  position: sticky; top: 130px; z-index: 10;
+}
+
+.br-tab {
+  background: #122440; border: 1px solid #1e3355; color: #4a6a90;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700;
+  padding: 5px 12px; border-radius: 4px; cursor: pointer;
+  transition: all 0.15s; letter-spacing: 0.5px; text-transform: uppercase;
+  white-space: nowrap;
+}
+.br-tab:hover { color: #7a92b0; background: #1a3050; }
+.br-tab--on {
+  border-color: var(--rc, #c9a84c);
+  color: var(--rc, #c9a84c);
+  background: color-mix(in srgb, var(--rc, #c9a84c) 10%, #122440);
+}
+
+.bracket-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  padding: 16px 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.bracket-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: #3a5270;
+}
+.bracket-empty p { margin-bottom: 8px; font-size: 14px; }
+
+/* Bracket match card */
+.bm {
+  background: #0d1e35;
+  border: 1px solid #1e3355;
+  border-top: 3px solid var(--rc, #c9a84c);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.bm:hover { border-color: color-mix(in srgb, var(--rc) 50%, #1e3355); }
+
+.bm-date {
+  padding: 5px 10px;
+  background: #071122;
+  font-size: 10px;
+  color: #3a5270;
+  border-bottom: 1px solid #1a2e4a;
+  letter-spacing: 0.3px;
+}
+
+.bm-divider {
+  height: 1px;
+  background: #1a2e4a;
+  margin: 0 10px;
+}
+
+/* Team slot */
+.bs-team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  transition: background 0.1s;
+}
+.bs-team--win {
+  background: color-mix(in srgb, var(--rc, #c9a84c) 8%, transparent);
+}
+.bs-team--tbd { opacity: 0.5; }
+
+.bs-flag { font-size: 20px; line-height: 1; flex-shrink: 0; }
+
+.bs-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px; font-weight: 700; color: #c8d8ec;
+  flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.bs-team--tbd .bs-name { color: #3a5270; font-size: 12px; }
+
+.bs-score {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px; font-weight: 800; color: #e8edf4;
+  min-width: 24px; text-align: right;
+}
+.bs-team--win .bs-score { color: var(--rc, #c9a84c); }
+
+/* Final banner */
+.final-banner {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 16px; margin: 0 20px 20px;
+  background: color-mix(in srgb, #c9a84c 8%, #0d1e35);
+  border: 1px solid #c9a84c;
+  border-radius: 8px;
+  font-size: 13px; font-weight: 600; color: #c9a84c;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 500px) {
+  .bracket-grid { padding: 12px; gap: 8px; grid-template-columns: 1fr; }
+  .bracket-tabs { padding: 10px 12px 8px; gap: 4px; top: 110px; }
+  .br-tab { font-size: 11px; padding: 4px 8px; }
+}
