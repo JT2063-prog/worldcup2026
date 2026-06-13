@@ -1,0 +1,137 @@
+/* GROUP PANEL */
+.group-panel {
+  background: #0d1e35; border: 1px solid #1e3355;
+  border-radius: 10px; overflow: hidden;
+  border-top: 3px solid var(--gc, #c9a84c);
+}
+
+.gp-header {
+  padding: 12px 14px 10px; border-bottom: 1px solid #1a2e4a;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.gp-label { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.gp-letter {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 17px; font-weight: 800; letter-spacing: 1px;
+  text-transform: uppercase; white-space: nowrap;
+}
+.gp-flags { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.gp-flag-item { display: flex; align-items: center; gap: 2px; font-size: 16px; cursor: default; }
+
+.gp-tabs { display: flex; gap: 4px; flex-shrink: 0; }
+.gt-btn {
+  background: none; border: 1px solid #1e3355; color: #4a6a90;
+  font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600;
+  padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: all 0.15s;
+}
+.gt-btn:hover { background: #122440; color: #7a92b0; }
+.gt-btn--on { border-color: currentColor; background: rgba(255,255,255,0.04); }
+
+/* FA EMBLEM */
+.fa-emblem-img {
+  display: block; border-radius: 2px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+.fa-emblem-fallback {
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 3px; font-size: 8px; font-weight: 800;
+  color: white; letter-spacing: 0.3px; flex-shrink: 0;
+}
+
+/* TEAM BADGES (flag + emblem pair) */
+.team-badges {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0;
+}
+.team-flag-lg { font-size: 22px; line-height: 1; }
+
+/* MATCH CARD */
+.gp-matches { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+
+.match-card {
+  background: #071122; border: 1px solid #1a2e4a;
+  border-radius: 8px; overflow: hidden; transition: border-color 0.15s;
+}
+.match-card:hover { border-color: color-mix(in srgb, var(--gc) 40%, #1a2e4a); }
+.mc--live { border-color: #22c55e !important; box-shadow: 0 0 14px rgba(34,197,94,0.12); }
+
+/* Meta bar */
+.mc-meta {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 10px; background: #050e1c; border-bottom: 1px solid #1a2e4a;
+}
+.mc-day { font-size: 9px; font-weight: 700; color: #2e4870; letter-spacing: 1px; text-transform: uppercase; }
+.mc-status { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; border-radius: 3px; padding: 2px 5px; }
+.mc-status--live { color: #22c55e; background: rgba(34,197,94,0.1); animation: pulse 1.5s infinite; }
+.mc-status--ft { color: #c9a84c; background: rgba(201,168,76,0.08); }
+.mc-status--ns { color: #3a5270; font-weight: 500; }
+.mc-time { margin-left: auto; font-size: 9px; color: #2e4870; letter-spacing: 0.3px; }
+
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* Body */
+.mc-body {
+  display: grid; grid-template-columns: 1fr 84px 1fr;
+  align-items: center; padding: 10px 10px 7px; gap: 6px;
+}
+.mc-team { display: flex; align-items: center; gap: 6px; }
+.mc-team--away { justify-content: flex-end; }
+
+.mc-name {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700;
+  color: #c8d8ec; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px;
+}
+.mc-name--r { text-align: right; }
+
+.mc-reds { font-size: 11px; flex-shrink: 0; }
+
+/* Score block */
+.mc-score-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.mc-score { display: flex; align-items: center; gap: 3px; }
+.mc-score-num { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; color: #e8edf4; line-height: 1; min-width: 20px; text-align: center; }
+.mc-score-sep { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; color: #2e4870; line-height: 1; }
+.mc-score--live .mc-score-num { color: #22c55e; }
+.mc-score--ns .mc-score-vs { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; color: #2e4870; letter-spacing: 2px; }
+.mc-kick-time { font-size: 9px; color: #2e4870; letter-spacing: 0.3px; }
+
+/* Venue */
+.mc-venue { padding: 0 10px 7px; font-size: 10px; color: #243a55; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* STANDINGS */
+.standings { padding: 10px; }
+.st-head {
+  display: grid;
+  grid-template-columns: 18px 20px 22px 1fr 24px 24px 24px 24px 24px 24px 26px 30px;
+  padding: 3px 8px 5px; border-bottom: 1px solid #1a2e4a; gap: 2px;
+}
+.st-head > span { font-size: 9px; font-weight: 700; color: #2e4870; letter-spacing: 1px; text-transform: uppercase; text-align: center; }
+.st-h-team { grid-column: 1 / 5; text-align: left !important; }
+.st-h-pts { text-align: center; }
+
+.st-row {
+  display: grid;
+  grid-template-columns: 18px 20px 22px 1fr 24px 24px 24px 24px 24px 24px 26px 30px;
+  align-items: center; padding: 6px 8px; gap: 2px;
+  border-radius: 5px; transition: background 0.1s;
+  border-left: 2px solid transparent;
+}
+.st-row:hover { background: #071122; }
+.st-row--q { background: color-mix(in srgb, var(--gc) 6%, transparent); border-left-color: var(--gc); }
+.st-row > span { font-size: 11px; color: #7a92b0; text-align: center; font-variant-numeric: tabular-nums; }
+.st-pos { font-size: 10px; font-weight: 700; color: #2e4870; }
+.st-flag { font-size: 15px; text-align: center; }
+.st-emblem { display: flex; align-items: center; justify-content: center; }
+.st-name { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; color: #c8d8ec; text-align: left !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.st-pts { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 800; color: #e8edf4; text-align: center; }
+
+@media (max-width: 500px) {
+  .mc-name { font-size: 11px; max-width: 62px; }
+  .mc-score-num { font-size: 22px; }
+  .mc-body { grid-template-columns: 1fr 70px 1fr; }
+  .team-flag-lg { font-size: 18px; }
+  .fa-emblem-img { width: 20px !important; height: 20px !important; }
+  .standings { overflow-x: auto; }
+  .st-head, .st-row {
+    grid-template-columns: 14px 18px 18px 1fr 20px 20px 20px 20px 20px 20px 24px 26px;
+    min-width: 360px;
+  }
+}

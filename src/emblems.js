@@ -1,0 +1,118 @@
+// Football Association Emblems
+// These render as SVG inline using Wikipedia Wikimedia CDN URLs
+// All 48 World Cup 2026 teams
+
+export const FA_EMBLEMS = {
+  // Group A
+  MEX: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/85/Federaci%C3%B3n_Mexicana_de_F%C3%BAtbol_logo.svg/200px-Federaci%C3%B3n_Mexicana_de_F%C3%BAtbol_logo.svg.png',
+  RSA: 'https://upload.wikimedia.org/wikipedia/en/thumb/c/c1/South_Africa_national_football_team_logo.svg/200px-South_Africa_national_football_team_logo.svg.png',
+  KOR: 'https://upload.wikimedia.org/wikipedia/en/thumb/5/5e/Korea_Football_Association_Logo.svg/200px-Korea_Football_Association_Logo.svg.png',
+  CZE: 'https://upload.wikimedia.org/wikipedia/en/thumb/3/3c/Football_Association_of_Czech_Republic_logo.svg/200px-Football_Association_of_Czech_Republic_logo.svg.png',
+  // Group B
+  CAN: 'https://upload.wikimedia.org/wikipedia/en/thumb/4/4e/Canada_Soccer_Logo.svg/200px-Canada_Soccer_Logo.svg.png',
+  BIH: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/86/Bosnia_Herzegovina_Football_Federation_logo.svg/200px-Bosnia_Herzegovina_Football_Federation_logo.svg.png',
+  QAT: 'https://upload.wikimedia.org/wikipedia/en/thumb/4/43/Qatar_Football_Association_Logo.svg/200px-Qatar_Football_Association_Logo.svg.png',
+  SUI: 'https://upload.wikimedia.org/wikipedia/en/thumb/1/11/Swiss_Football_Association_logo.svg/200px-Swiss_Football_Association_logo.svg.png',
+  // Group C
+  BRA: 'https://upload.wikimedia.org/wikipedia/en/thumb/0/09/Confedera%C3%A7%C3%A3o_Brasileira_de_Futebol_logo.svg/200px-Confedera%C3%A7%C3%A3o_Brasileira_de_Futebol_logo.svg.png',
+  MAR: 'https://upload.wikimedia.org/wikipedia/en/thumb/0/06/F%C3%A9d%C3%A9ration_Royale_Marocaine_de_Football_logo.svg/200px-F%C3%A9d%C3%A9ration_Royale_Marocaine_de_Football_logo.svg.png',
+  HAI: 'https://upload.wikimedia.org/wikipedia/en/thumb/9/91/Haiti_Football_Federation_Logo.svg/200px-Haiti_Football_Federation_Logo.svg.png',
+  SCO: 'https://upload.wikimedia.org/wikipedia/en/thumb/a/a3/Scottish_Football_Association_Logo_2019.svg/200px-Scottish_Football_Association_Logo_2019.svg.png',
+  // Group D
+  USA: 'https://upload.wikimedia.org/wikipedia/en/thumb/9/9a/United_States_Soccer_Federation_logo.svg/200px-United_States_Soccer_Federation_logo.svg.png',
+  PAR: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/86/Asociaci%C3%B3n_Paraguaya_de_F%C3%BAtbol.svg/200px-Asociaci%C3%B3n_Paraguaya_de_F%C3%BAtbol.svg.png',
+  AUS: 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f8/Football_Federation_Australia_logo_2017.svg/200px-Football_Federation_Australia_logo_2017.svg.png',
+  TUR: 'https://upload.wikimedia.org/wikipedia/en/thumb/5/55/T%C3%BCrkiye_Futbol_Federasyonu_logo.svg/200px-T%C3%BCrkiye_Futbol_Federasyonu_logo.svg.png',
+  // Group E
+  GER: 'https://upload.wikimedia.org/wikipedia/en/thumb/4/44/DFB-Logo_2024.svg/200px-DFB-Logo_2024.svg.png',
+  CUW: 'https://upload.wikimedia.org/wikipedia/en/thumb/5/5d/Cura%C3%A7ao_Football_Federation.svg/200px-Cura%C3%A7ao_Football_Federation.svg.png',
+  CIV: 'https://upload.wikimedia.org/wikipedia/en/thumb/c/c7/F%C3%A9d%C3%A9ration_Ivoirienne_de_Football_logo.svg/200px-F%C3%A9d%C3%A9ration_Ivoirienne_de_Football_logo.svg.png',
+  ECU: 'https://upload.wikimedia.org/wikipedia/en/thumb/d/d7/Federaci%C3%B3n_Ecuatoriana_de_F%C3%BAtbol_logo.svg/200px-Federaci%C3%B3n_Ecuatoriana_de_F%C3%BAtbol_logo.svg.png',
+  // Group F
+  NED: 'https://upload.wikimedia.org/wikipedia/en/thumb/7/74/Royal_Dutch_Football_Association_KNVB_logo.svg/200px-Royal_Dutch_Football_Association_KNVB_logo.svg.png',
+  JPN: 'https://upload.wikimedia.org/wikipedia/en/thumb/6/6e/JFA_logo.svg/200px-JFA_logo.svg.png',
+  SWE: 'https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/SvFF_logo.svg/200px-SvFF_logo.svg.png',
+  TUN: 'https://upload.wikimedia.org/wikipedia/en/thumb/d/df/F%C3%A9d%C3%A9ration_Tunisienne_de_Football.svg/200px-F%C3%A9d%C3%A9ration_Tunisienne_de_Football.svg.png',
+  // Group G
+  BEL: 'https://upload.wikimedia.org/wikipedia/en/thumb/0/03/Royal_Belgian_Football_Association_logo.svg/200px-Royal_Belgian_Football_Association_logo.svg.png',
+  EGY: 'https://upload.wikimedia.org/wikipedia/en/thumb/3/31/Egyptian_Football_Association_logo.svg/200px-Egyptian_Football_Association_logo.svg.png',
+  IRN: 'https://upload.wikimedia.org/wikipedia/en/thumb/7/77/Football_Federation_Islamic_Republic_of_Iran.svg/200px-Football_Federation_Islamic_Republic_of_Iran.svg.png',
+  NZL: 'https://upload.wikimedia.org/wikipedia/en/thumb/4/46/New_Zealand_Football_Logo.svg/200px-New_Zealand_Football_Logo.svg.png',
+  // Group H
+  ESP: 'https://upload.wikimedia.org/wikipedia/en/thumb/f/fb/Real_Federaci%C3%B3n_Espa%C3%B1ola_de_F%C3%BAtbol_logo.svg/200px-Real_Federaci%C3%B3n_Espa%C3%B1ola_de_F%C3%BAtbol_logo.svg.png',
+  CPV: 'https://upload.wikimedia.org/wikipedia/en/thumb/c/c9/Football_Federation_of_Cape_Verde_Islands_logo.svg/200px-Football_Federation_of_Cape_Verde_Islands_logo.svg.png',
+  KSA: 'https://upload.wikimedia.org/wikipedia/en/thumb/a/a6/Saudi_Arabia_Football_Federation_Logo.svg/200px-Saudi_Arabia_Football_Federation_Logo.svg.png',
+  URU: 'https://upload.wikimedia.org/wikipedia/en/thumb/2/23/Asociaci%C3%B3n_Uruguaya_de_F%C3%BAtbol_logo.svg/200px-Asociaci%C3%B3n_Uruguaya_de_F%C3%BAtbol_logo.svg.png',
+  // Group I
+  FRA: 'https://upload.wikimedia.org/wikipedia/en/thumb/1/1d/F%C3%A9d%C3%A9ration_Fran%C3%A7aise_de_Football_Logo_2021.svg/200px-F%C3%A9d%C3%A9ration_Fran%C3%A7aise_de_Football_Logo_2021.svg.png',
+  SEN: 'https://upload.wikimedia.org/wikipedia/en/thumb/d/df/F%C3%A9d%C3%A9ration_S%C3%A9n%C3%A9galaise_de_Football_logo.svg/200px-F%C3%A9d%C3%A9ration_S%C3%A9n%C3%A9galaise_de_Football_logo.svg.png',
+  IRQ: 'https://upload.wikimedia.org/wikipedia/en/thumb/7/7d/Iraqi_Football_Association_Logo.svg/200px-Iraqi_Football_Association_Logo.svg.png',
+  NOR: 'https://upload.wikimedia.org/wikipedia/en/thumb/7/71/Norges_Fotballforbund_Logo.svg/200px-Norges_Fotballforbund_Logo.svg.png',
+  // Group J
+  ARG: 'https://upload.wikimedia.org/wikipedia/en/thumb/c/ca/Argentine_Football_Association.svg/200px-Argentine_Football_Association.svg.png',
+  ALG: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/8e/F%C3%A9d%C3%A9ration_Alg%C3%A9rienne_de_football_logo.svg/200px-F%C3%A9d%C3%A9ration_Alg%C3%A9rienne_de_football_logo.svg.png',
+  AUT: 'https://upload.wikimedia.org/wikipedia/en/thumb/1/11/%C3%96sterreichischer_Fu%C3%9Fball-Bund_logo.svg/200px-%C3%96sterreichischer_Fu%C3%9Fball-Bund_logo.svg.png',
+  JOR: 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e0/Jordan_Football_Association.svg/200px-Jordan_Football_Association.svg.png',
+  // Group K
+  POR: 'https://upload.wikimedia.org/wikipedia/en/thumb/3/34/Federacao_Portuguesa_de_Futebol_logo.svg/200px-Federacao_Portuguesa_de_Futebol_logo.svg.png',
+  COL: 'https://upload.wikimedia.org/wikipedia/en/thumb/6/6d/Federaci%C3%B3n_Colombiana_de_F%C3%BAtbol_logo.svg/200px-Federaci%C3%B3n_Colombiana_de_F%C3%BAtbol_logo.svg.png',
+  UZB: 'https://upload.wikimedia.org/wikipedia/en/thumb/7/71/Uzbekistan_Football_Federation_logo.svg/200px-Uzbekistan_Football_Federation_logo.svg.png',
+  COD: 'https://upload.wikimedia.org/wikipedia/en/thumb/b/b5/F%C3%A9d%C3%A9ration_de_Football_de_la_R%C3%A9publique_D%C3%A9mocratique_du_Congo_logo.svg/200px-F%C3%A9d%C3%A9ration_de_Football_de_la_R%C3%A9publique_D%C3%A9mocratique_du_Congo_logo.svg.png',
+  // Group L
+  ENG: 'https://upload.wikimedia.org/wikipedia/en/thumb/a/a9/The_Football_Association_England.svg/200px-The_Football_Association_England.svg.png',
+  CRO: 'https://upload.wikimedia.org/wikipedia/en/thumb/6/69/Croatian_Football_Federation_Logo_2023.svg/200px-Croatian_Football_Federation_Logo_2023.svg.png',
+  PAN: 'https://upload.wikimedia.org/wikipedia/en/thumb/a/a8/FEPAFUT.svg/200px-FEPAFUT.svg.png',
+  GHA: 'https://upload.wikimedia.org/wikipedia/en/thumb/0/09/Ghana_Football_Association.svg/200px-Ghana_Football_Association.svg.png',
+};
+
+// FA names for tooltip
+export const FA_NAMES = {
+  MEX: 'Federación Mexicana de Fútbol',
+  RSA: 'South African Football Association',
+  KOR: 'Korea Football Association',
+  CZE: 'Football Association of Czech Republic',
+  CAN: 'Canada Soccer',
+  BIH: 'Football Federation of Bosnia & Herzegovina',
+  QAT: 'Qatar Football Association',
+  SUI: 'Swiss Football Association',
+  BRA: 'Confederação Brasileira de Futebol',
+  MAR: 'Fédération Royale Marocaine de Football',
+  HAI: 'Fédération Haïtienne de Football',
+  SCO: 'Scottish Football Association',
+  USA: 'United States Soccer Federation',
+  PAR: 'Asociación Paraguaya de Fútbol',
+  AUS: 'Football Australia',
+  TUR: 'Türkiye Futbol Federasyonu',
+  GER: 'Deutscher Fußball-Bund (DFB)',
+  CUW: 'Curaçao Football Federation',
+  CIV: 'Fédération Ivoirienne de Football',
+  ECU: 'Federación Ecuatoriana de Fútbol',
+  NED: 'Koninklijke Nederlandse Voetbalbond (KNVB)',
+  JPN: 'Japan Football Association (JFA)',
+  SWE: 'Svenska Fotbollförbundet',
+  TUN: 'Fédération Tunisienne de Football',
+  BEL: 'Royal Belgian Football Association',
+  EGY: 'Egyptian Football Association',
+  IRN: 'Football Federation Islamic Republic of Iran',
+  NZL: 'New Zealand Football',
+  ESP: 'Real Federación Española de Fútbol (RFEF)',
+  CPV: 'Federação Cabo-verdiana de Futebol',
+  KSA: 'Saudi Arabian Football Federation',
+  URU: 'Asociación Uruguaya de Fútbol',
+  FRA: 'Fédération Française de Football (FFF)',
+  SEN: 'Fédération Sénégalaise de Football',
+  IRQ: 'Iraqi Football Association',
+  NOR: 'Norges Fotballforbund',
+  ARG: 'Asociación del Fútbol Argentino (AFA)',
+  ALG: 'Fédération Algérienne de Football',
+  AUT: 'Österreichischer Fußball-Bund (ÖFB)',
+  JOR: 'Jordan Football Association',
+  POR: 'Federação Portuguesa de Futebol (FPF)',
+  COL: 'Federación Colombiana de Fútbol',
+  UZB: 'Uzbekistan Football Federation',
+  COD: 'Fédération de Football de la RD Congo',
+  ENG: 'The Football Association (The FA)',
+  CRO: 'Croatian Football Federation (HNS)',
+  PAN: 'Federación Panameña de Fútbol (FEPAFUT)',
+  GHA: 'Ghana Football Association',
+};
