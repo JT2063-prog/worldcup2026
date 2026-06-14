@@ -262,3 +262,17 @@
 }
 .tab-item--active .tab-label { color: var(--blue); }
 .tab-item--active .tab-icon { filter: none; }
+
+.status-btn {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.status-btn:active { opacity: 0.7; }

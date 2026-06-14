@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { MATCHES, GROUPS, GROUP_COLORS, TEAMS } from './data';
-import { useLiveScores } from './useLiveScores';
-import { isLivePhase, isFinishedPhase, phaseLabel } from './useLiveScores';
+import { useLiveScores, isLivePhase, isFinishedPhase, phaseLabel } from './useLiveScores';
 import Groups from './Groups';
 import MyTeams from './MyTeams';
 import Bracket from './Bracket';
 import './App.css';
 
-const LS_KEY = 'wc2026_api_key';
-
 // ── MATCH ROW (transaction-list style) ──
-export function MatchRow({ match, liveData, onPress }) {
+export function MatchRow({ match, liveData }) {
   const key = `${match.home}_${match.away}`;
   const live = liveData?.[key];
   const homeScore = live?.homeScore ?? match.homeScore;
@@ -21,18 +18,15 @@ export function MatchRow({ match, liveData, onPress }) {
   const home = TEAMS[match.home];
   const away = TEAMS[match.away];
   const color = GROUP_COLORS[match.group];
-
-  const aestTime = match.kickoffAEST.toLocaleString('en-AU', {
-    timeZone: 'Australia/Sydney',
-    hour: '2-digit', minute: '2-digit', hour12: false
-  });
-
   const homeRed = live?.homeRed ?? match.homeRed ?? 0;
   const awayRed = live?.awayRed ?? match.awayRed ?? 0;
 
+  const aestTime = match.kickoffAEST.toLocaleString('en-AU', {
+    timeZone: 'Australia/Sydney', hour: '2-digit', minute: '2-digit', hour12: false
+  });
+
   return (
-    <div className={`match-row ${isLive ? 'match-row--live' : ''}`} onClick={onPress}>
-      {/* Left: time / status */}
+    <div className={`match-row ${isLive ? 'match-row--live' : ''}`}>
       <div className="mr-left">
         {isLive ? (
           <span className="mr-badge mr-badge--live">● {phaseLabel(phase)}</span>
@@ -43,8 +37,6 @@ export function MatchRow({ match, liveData, onPress }) {
         )}
         <span className="mr-group" style={{ color }}>GRP {match.group}</span>
       </div>
-
-      {/* Centre: teams */}
       <div className="mr-centre">
         <div className="mr-team">
           <span className="mr-flag">{home?.flag}</span>
@@ -57,8 +49,6 @@ export function MatchRow({ match, liveData, onPress }) {
           {awayRed > 0 && <span className="mr-red">{'🟥'.repeat(Math.min(awayRed,2))}</span>}
         </div>
       </div>
-
-      {/* Right: score */}
       <div className="mr-right">
         {homeScore !== null || isLive ? (
           <>
@@ -81,7 +71,6 @@ function Schedule({ liveData }) {
   const [filter, setFilter] = useState('All');
   const now = new Date();
   const filters = ['All', 'Live', 'Today', 'Upcoming', 'Results'];
-
   const sorted = [...MATCHES].sort((a, b) => a.kickoffAEST - b.kickoffAEST);
   const todayStr = now.toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' });
 
@@ -100,7 +89,6 @@ function Schedule({ liveData }) {
     return true;
   });
 
-  // Group by date
   const byDate = {};
   filtered.forEach(m => {
     const d = m.kickoffAEST.toLocaleDateString('en-AU', {
@@ -112,7 +100,6 @@ function Schedule({ liveData }) {
 
   return (
     <div className="schedule-view">
-      {/* Filter pills */}
       <div className="filter-row">
         {filters.map(f => (
           <button key={f}
@@ -122,11 +109,8 @@ function Schedule({ liveData }) {
           </button>
         ))}
       </div>
-
       {Object.keys(byDate).length === 0 ? (
-        <div className="empty-state">
-          <p>No matches for this filter</p>
-        </div>
+        <div className="empty-state"><p>No matches for this filter</p></div>
       ) : (
         Object.entries(byDate).map(([date, matches]) => (
           <div key={date} className="date-section">
@@ -150,8 +134,7 @@ function Schedule({ liveData }) {
 export default function App() {
   const [tab, setTab] = useState('schedule');
   const [now, setNow] = useState(new Date());
-  const [apiKey] = useState(() => localStorage.getItem(LS_KEY) || '');
-  const { liveData, status } = useLiveScores(apiKey);
+  const { liveData, status, lastFetched, refetch } = useLiveScores();
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30000);
@@ -160,9 +143,15 @@ export default function App() {
 
   const liveCount = Object.values(liveData).filter(d => isLivePhase(d.phase)).length;
 
+  const statusLabel = {
+    ok: '🟢 Live',
+    fetching: '🟡 Updating',
+    error: '🔴 Offline',
+    loading: '⚪ Loading',
+  }[status] || '⚪';
+
   return (
     <div className="app">
-      {/* ── HEADER ── */}
       <header className="app-header">
         <div className="app-header-inner">
           <div>
@@ -179,12 +168,13 @@ export default function App() {
             {liveCount > 0 && (
               <span className="live-indicator">● {liveCount} Live</span>
             )}
-            <span className="api-status">{status === 'ok' ? '🟢' : status === 'no-key' ? '⚪' : '🟡'}</span>
+            <button className="status-btn" onClick={refetch} title="Tap to refresh">
+              {statusLabel}
+            </button>
           </div>
         </div>
       </header>
 
-      {/* ── CONTENT ── */}
       <main className="app-main">
         {tab === 'schedule' && <Schedule liveData={liveData} />}
         {tab === 'groups'   && <Groups liveData={liveData} />}
@@ -192,7 +182,6 @@ export default function App() {
         {tab === 'myteams'  && <MyTeams liveData={liveData} />}
       </main>
 
-      {/* ── BOTTOM TABS ── */}
       <nav className="tab-bar">
         {[
           { id: 'schedule', icon: '📅', label: 'Schedule' },
