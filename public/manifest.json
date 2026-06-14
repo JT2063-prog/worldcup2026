@@ -1,24 +1,15 @@
 {
   "name": "World Cup 2026",
-  "short_name": "WC2026",
+  "short_name": "WC 2026",
   "description": "FIFA World Cup 2026 group stage tracker — all times AEST",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#060d1a",
-  "theme_color": "#060d1a",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0a0e1a",
   "orientation": "portrait",
   "icons": [
-    {
-      "src": "/icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-1024.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any maskable" }
   ]
 }

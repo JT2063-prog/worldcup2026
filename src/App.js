@@ -1,172 +1,213 @@
 import React, { useState, useEffect } from 'react';
-import { GROUPS, GROUP_COLORS } from './data';
-import GroupPanel from './GroupPanel';
-import Bracket from './Bracket';
-import MyTeams from './MyTeams';
-import NextGames from './NextGames';
+import { MATCHES, GROUPS, GROUP_COLORS, TEAMS } from './data';
 import { useLiveScores } from './useLiveScores';
+import { isLivePhase, isFinishedPhase, phaseLabel } from './useLiveScores';
+import Groups from './Groups';
+import MyTeams from './MyTeams';
+import Bracket from './Bracket';
 import './App.css';
 
 const LS_KEY = 'wc2026_api_key';
 
-export default function App() {
-  const [activeGroup, setActiveGroup] = useState('ALL');
-  const [view, setView] = useState('groups'); // 'groups' | 'bracket' | 'myteams'
-  const [now, setNow] = useState(new Date());
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem(LS_KEY) || '');
-  const [showApiSetup, setShowApiSetup] = useState(false);
-  const [draftKey, setDraftKey] = useState('');
+// ── MATCH ROW (transaction-list style) ──
+export function MatchRow({ match, liveData, onPress }) {
+  const key = `${match.home}_${match.away}`;
+  const live = liveData?.[key];
+  const homeScore = live?.homeScore ?? match.homeScore;
+  const awayScore = live?.awayScore ?? match.awayScore;
+  const phase = live?.phase || (match.homeScore !== null ? 'FT' : 'PRE');
+  const isLive = isLivePhase(phase);
+  const isDone = homeScore !== null && !isLive;
+  const home = TEAMS[match.home];
+  const away = TEAMS[match.away];
+  const color = GROUP_COLORS[match.group];
 
-  const { liveData, status, lastFetched, requestsUsed, refetch } = useLiveScores(apiKey);
+  const aestTime = match.kickoffAEST.toLocaleString('en-AU', {
+    timeZone: 'Australia/Sydney',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  });
+
+  const homeRed = live?.homeRed ?? match.homeRed ?? 0;
+  const awayRed = live?.awayRed ?? match.awayRed ?? 0;
+
+  return (
+    <div className={`match-row ${isLive ? 'match-row--live' : ''}`} onClick={onPress}>
+      {/* Left: time / status */}
+      <div className="mr-left">
+        {isLive ? (
+          <span className="mr-badge mr-badge--live">● {phaseLabel(phase)}</span>
+        ) : isDone ? (
+          <span className="mr-badge mr-badge--ft">FT</span>
+        ) : (
+          <span className="mr-time">{aestTime}</span>
+        )}
+        <span className="mr-group" style={{ color }}>GRP {match.group}</span>
+      </div>
+
+      {/* Centre: teams */}
+      <div className="mr-centre">
+        <div className="mr-team">
+          <span className="mr-flag">{home?.flag}</span>
+          <span className={`mr-name ${isDone && homeScore > awayScore ? 'mr-name--win' : ''}`}>{home?.name}</span>
+          {homeRed > 0 && <span className="mr-red">{'🟥'.repeat(Math.min(homeRed,2))}</span>}
+        </div>
+        <div className="mr-team">
+          <span className="mr-flag">{away?.flag}</span>
+          <span className={`mr-name ${isDone && awayScore > homeScore ? 'mr-name--win' : ''}`}>{away?.name}</span>
+          {awayRed > 0 && <span className="mr-red">{'🟥'.repeat(Math.min(awayRed,2))}</span>}
+        </div>
+      </div>
+
+      {/* Right: score */}
+      <div className="mr-right">
+        {homeScore !== null || isLive ? (
+          <>
+            <span className={`mr-score ${isDone && homeScore > awayScore ? 'mr-score--win' : ''}`}>{homeScore ?? '?'}</span>
+            <span className={`mr-score ${isDone && awayScore > homeScore ? 'mr-score--win' : ''}`}>{awayScore ?? '?'}</span>
+          </>
+        ) : (
+          <>
+            <span className="mr-score mr-score--dash">–</span>
+            <span className="mr-score mr-score--dash">–</span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── SCHEDULE VIEW ──
+function Schedule({ liveData }) {
+  const [filter, setFilter] = useState('All');
+  const now = new Date();
+  const filters = ['All', 'Live', 'Today', 'Upcoming', 'Results'];
+
+  const sorted = [...MATCHES].sort((a, b) => a.kickoffAEST - b.kickoffAEST);
+  const todayStr = now.toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' });
+
+  const filtered = sorted.filter(m => {
+    const key = `${m.home}_${m.away}`;
+    const live = liveData?.[key];
+    const hs = live?.homeScore ?? m.homeScore;
+    const phase = live?.phase || (hs !== null ? 'FT' : 'PRE');
+    const isLive = isLivePhase(phase);
+    const isDone = hs !== null && !isLive;
+    const matchDay = m.kickoffAEST.toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' });
+    if (filter === 'Live') return isLive;
+    if (filter === 'Today') return matchDay === todayStr;
+    if (filter === 'Upcoming') return !isDone && !isLive && m.kickoffAEST > now;
+    if (filter === 'Results') return isDone;
+    return true;
+  });
+
+  // Group by date
+  const byDate = {};
+  filtered.forEach(m => {
+    const d = m.kickoffAEST.toLocaleDateString('en-AU', {
+      timeZone: 'Australia/Sydney', weekday: 'long', day: 'numeric', month: 'long'
+    });
+    if (!byDate[d]) byDate[d] = [];
+    byDate[d].push(m);
+  });
+
+  return (
+    <div className="schedule-view">
+      {/* Filter pills */}
+      <div className="filter-row">
+        {filters.map(f => (
+          <button key={f}
+            className={`filter-pill ${filter === f ? 'filter-pill--on' : ''}`}
+            onClick={() => setFilter(f)}>
+            {f === 'Live' ? '● Live' : f}
+          </button>
+        ))}
+      </div>
+
+      {Object.keys(byDate).length === 0 ? (
+        <div className="empty-state">
+          <p>No matches for this filter</p>
+        </div>
+      ) : (
+        Object.entries(byDate).map(([date, matches]) => (
+          <div key={date} className="date-section">
+            <div className="date-header">{date}</div>
+            <div className="match-list-card">
+              {matches.map((m, i) => (
+                <React.Fragment key={m.id}>
+                  {i > 0 && <div className="match-divider" />}
+                  <MatchRow match={m} liveData={liveData} />
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+// ── MAIN APP ──
+export default function App() {
+  const [tab, setTab] = useState('schedule');
+  const [now, setNow] = useState(new Date());
+  const [apiKey] = useState(() => localStorage.getItem(LS_KEY) || '');
+  const { liveData, status } = useLiveScores(apiKey);
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(t);
   }, []);
 
-  const saveKey = () => {
-    const k = draftKey.trim();
-    localStorage.setItem(LS_KEY, k);
-    setApiKey(k);
-    setShowApiSetup(false);
-  };
-
-  const clearKey = () => {
-    localStorage.removeItem(LS_KEY);
-    setApiKey('');
-    setShowApiSetup(false);
-  };
-
-  const displayGroups = activeGroup === 'ALL' ? GROUPS : [activeGroup];
-
-  const statusDot = {
-    ok: '🟢', fetching: '🟡', error: '🔴', 'no-key': '⚪',
-    'rate-limited': '🟠', idle: '⚪',
-  }[status] || '⚪';
+  const liveCount = Object.values(liveData).filter(d => isLivePhase(d.phase)).length;
 
   return (
     <div className="app">
-      <header className="header">
-        <div className="header-inner">
-          <div className="header-brand">
-            <div className="trophy-icon">🏆</div>
-            <div>
-              <h1 className="header-title">FIFA World Cup 2026™</h1>
-              <p className="header-sub">Group Stage · All times AEST (UTC+10)</p>
-            </div>
+      {/* ── HEADER ── */}
+      <header className="app-header">
+        <div className="app-header-inner">
+          <div>
+            <h1 className="app-title">World Cup 2026</h1>
+            <p className="app-sub">
+              {now.toLocaleString('en-AU', {
+                timeZone: 'Australia/Sydney',
+                weekday: 'short', day: 'numeric', month: 'short',
+                hour: '2-digit', minute: '2-digit', hour12: false
+              })} AEST
+            </p>
           </div>
-          <div className="header-right">
-            <div className="header-clock">
-              <span className="clock-label">AEST</span>
-              <span className="clock-time">
-                {now.toLocaleString('en-AU', {
-                  timeZone: 'Australia/Sydney',
-                  day: '2-digit', month: 'short',
-                  hour: '2-digit', minute: '2-digit',
-                  hour12: false
-                })}
-              </span>
-            </div>
-            <button className="api-btn"
-              onClick={() => { setDraftKey(apiKey); setShowApiSetup(s => !s); }}
-              title={apiKey ? `Live data: ${status} · ${requestsUsed} req used` : 'Set up live scores'}>
-              {statusDot} {apiKey ? 'Live' : 'Static'}
-            </button>
+          <div className="app-header-right">
+            {liveCount > 0 && (
+              <span className="live-indicator">● {liveCount} Live</span>
+            )}
+            <span className="api-status">{status === 'ok' ? '🟢' : status === 'no-key' ? '⚪' : '🟡'}</span>
           </div>
         </div>
-
-        {/* API Key Setup Panel */}
-        {showApiSetup && (
-          <div className="api-setup">
-            <div className="api-setup-inner">
-              <div className="api-setup-header">
-                <h3>Live Score API Key</h3>
-                <p>Get a free key at <a href="https://www.wc2026api.com" target="_blank" rel="noopener noreferrer">wc2026api.com</a> (100 req/day free)</p>
-              </div>
-              <div className="api-setup-row">
-                <input className="api-input" type="text"
-                  placeholder="wc2026_your_key_here"
-                  value={draftKey}
-                  onChange={e => setDraftKey(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && saveKey()} />
-                <button className="api-save-btn" onClick={saveKey}>Save</button>
-                {apiKey && <button className="api-clear-btn" onClick={clearKey}>Remove</button>}
-              </div>
-              {apiKey && (
-                <div className="api-status-row">
-                  <span>{statusDot} Status: {status}</span>
-                  {lastFetched && <span>· Last updated: {lastFetched.toLocaleTimeString('en-AU', { timeZone: 'Australia/Sydney', hour12: false })}</span>}
-                  <span>· {requestsUsed} req used today</span>
-                  <button className="api-refresh-btn" onClick={refetch}>↻ Refresh now</button>
-                </div>
-              )}
-              <p className="api-note">Key stored in your browser only. Without a key, scores update on each redeploy.</p>
-            </div>
-          </div>
-        )}
-
-        {/* Nav */}
-        <nav className="group-nav">
-          <button className={`gn-btn gn-btn--view ${view === 'groups' ? 'gn-btn--active' : ''}`}
-            onClick={() => setView('groups')}
-            style={view === 'groups' ? { '--gc': '#c9a84c' } : {}}>
-            ⚽ Groups
-          </button>
-          <button className={`gn-btn gn-btn--view ${view === 'bracket' ? 'gn-btn--active' : ''}`}
-            onClick={() => setView('bracket')}
-            style={view === 'bracket' ? { '--gc': '#c9a84c' } : {}}>
-            🏆 Bracket
-          </button>
-          <button className={`gn-btn gn-btn--view gn-btn--myteams ${view === 'myteams' ? 'gn-btn--active' : ''}`}
-            onClick={() => setView('myteams')}
-            style={view === 'myteams' ? { '--gc': '#22c55e' } : {}}>
-            ★ My Teams
-          </button>
-
-          {view === 'groups' && (
-            <>
-              <span className="gn-divider" />
-              <button className={`gn-btn ${activeGroup === 'ALL' ? 'gn-btn--active' : ''}`}
-                onClick={() => setActiveGroup('ALL')}
-                style={activeGroup === 'ALL' ? { '--gc': '#c9a84c' } : {}}>
-                ALL
-              </button>
-              {GROUPS.map(g => (
-                <button key={g}
-                  className={`gn-btn ${activeGroup === g ? 'gn-btn--active' : ''}`}
-                  onClick={() => setActiveGroup(g)}
-                  style={activeGroup === g ? { '--gc': GROUP_COLORS[g] } : {}}>
-                  {g}
-                </button>
-              ))}
-            </>
-          )}
-        </nav>
       </header>
 
-      <main className="main">
-        {view === 'bracket' ? (
-          <Bracket />
-        ) : view === 'myteams' ? (
-          <MyTeams liveData={liveData} />
-        ) : (
-          <div className={`groups-grid ${activeGroup !== 'ALL' ? 'groups-grid--single' : ''}`}>
-            {displayGroups.map(g => (
-              <GroupPanel key={g} group={g} now={now} liveData={liveData} />
-            ))}
-          </div>
-        )}
+      {/* ── CONTENT ── */}
+      <main className="app-main">
+        {tab === 'schedule' && <Schedule liveData={liveData} />}
+        {tab === 'groups'   && <Groups liveData={liveData} />}
+        {tab === 'bracket'  && <Bracket />}
+        {tab === 'myteams'  && <MyTeams liveData={liveData} />}
       </main>
 
-      {/* Next Games sticky bottom bar */}
-      <NextGames liveData={liveData} onMatchClick={(m) => {
-        setActiveGroup(m.group);
-        setView('groups');
-      }} />
-
-      <footer className="footer">
-        <p>All times AEST · Live data via <a href="https://www.wc2026api.com" target="_blank" rel="noopener noreferrer">wc2026api.com</a> · Not affiliated with FIFA</p>
-      </footer>
+      {/* ── BOTTOM TABS ── */}
+      <nav className="tab-bar">
+        {[
+          { id: 'schedule', icon: '📅', label: 'Schedule' },
+          { id: 'groups',   icon: '⚽', label: 'Groups'   },
+          { id: 'bracket',  icon: '🏆', label: 'Bracket'  },
+          { id: 'myteams',  icon: '★',  label: 'My Teams' },
+        ].map(t => (
+          <button key={t.id}
+            className={`tab-item ${tab === t.id ? 'tab-item--active' : ''}`}
+            onClick={() => setTab(t.id)}>
+            <span className="tab-icon">{t.icon}</span>
+            <span className="tab-label">{t.label}</span>
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }
