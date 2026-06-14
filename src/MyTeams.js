@@ -15,7 +15,7 @@ const ALL_BY_CONF = {
   'OFC': ['NZL'],
 };
 
-export default function MyTeams({ liveData }) {
+export default function MyTeams({ liveData, onMatchSelect }) {
   const [followed, setFollowed] = useState(() => {
     try { return JSON.parse(localStorage.getItem(LS_KEY)) || ['AUS']; }
     catch { return ['AUS']; }
@@ -99,7 +99,7 @@ export default function MyTeams({ liveData }) {
                     {matches.map((m, i) => (
                       <React.Fragment key={m.id}>
                         {i > 0 && <div className="match-divider" />}
-                        <MatchRow match={m} liveData={liveData} />
+                        <MatchRow match={m} liveData={liveData} onPress={() => onMatchSelect && onMatchSelect(m)} />
                       </React.Fragment>
                     ))}
                   </div>

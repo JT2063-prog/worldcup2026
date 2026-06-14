@@ -98,49 +98,74 @@ const toAEST = (etDate, etTime) => {
   return new Date(utcMs);
 };
 
-const M = (id, group, home, away, etDate, etTime, homeScore, awayScore, homeRed, awayRed, venue, matchday) => ({
+// G() helper: goal entry { player, team, minute, og (own goal), pen (penalty) }
+const G = (player, team, minute, og = false, pen = false) => ({ player, team, minute, og, pen });
+
+const M = (id, group, home, away, etDate, etTime, homeScore, awayScore, homeRed, awayRed, venue, matchday, goals = []) => ({
   id, group, home, away,
   kickoffAEST: toAEST(etDate, etTime),
   homeScore, awayScore, homeRed: homeRed || 0, awayRed: awayRed || 0,
-  venue, matchday,
+  venue, matchday, goals,
   status: homeScore !== null ? 'FT' : (Date.now() > toAEST(etDate, etTime).getTime() && Date.now() < toAEST(etDate, etTime).getTime() + 115*60000 ? 'LIVE' : 'NS'),
 });
 
 export const MATCHES = [
   // ===== GROUP A =====
-  M('A1', 'A', 'MEX', 'RSA', '2026-06-11', '15:00', 2, 0, 0, 0, 'Estadio Azteca, Mexico City', 1),
-  M('A2', 'A', 'KOR', 'CZE', '2026-06-11', '22:00', 2, 1, 0, 0, 'Estadio Akron, Guadalajara', 1),
+  M('A1', 'A', 'MEX', 'RSA', '2026-06-11', '15:00', 2, 0, 0, 0, 'Estadio Azteca, Mexico City', 1, [
+    G('Julián Quiñones', 'MEX', 9), G('Raúl Jiménez', 'MEX', 67),
+  ]),
+  M('A2', 'A', 'KOR', 'CZE', '2026-06-11', '22:00', 2, 1, 0, 0, 'Estadio Akron, Guadalajara', 1, [
+    G('Ladislav Krejčí', 'CZE', 58), G('Hwang In-beom', 'KOR', 71), G('Oh Hyeon-gyu', 'KOR', 84),
+  ]),
   M('A3', 'A', 'CZE', 'RSA', '2026-06-18', '12:00', null, null, 0, 0, 'Mercedes-Benz Stadium, Atlanta', 2),
   M('A4', 'A', 'MEX', 'KOR', '2026-06-18', '21:00', null, null, 0, 0, 'Estadio Akron, Guadalajara', 2),
   M('A5', 'A', 'CZE', 'MEX', '2026-06-24', '21:00', null, null, 0, 0, 'TBD', 3),
   M('A6', 'A', 'RSA', 'KOR', '2026-06-24', '21:00', null, null, 0, 0, 'TBD', 3),
 
   // ===== GROUP B =====
-  M('B1', 'B', 'CAN', 'BIH', '2026-06-12', '15:00', 1, 1, 0, 0, 'BMO Field, Toronto', 1),
-  M('B2', 'B', 'QAT', 'SUI', '2026-06-13', '15:00', null, null, 0, 0, "Levi's Stadium, Santa Clara", 1),
+  M('B1', 'B', 'CAN', 'BIH', '2026-06-12', '15:00', 1, 1, 0, 0, 'BMO Field, Toronto', 1, [
+    G('Jovo Lukić', 'BIH', 23), G('Cyle Larin', 'CAN', 67),
+  ]),
+  M('B2', 'B', 'QAT', 'SUI', '2026-06-13', '15:00', 1, 1, 0, 0, "Levi's Stadium, Santa Clara", 1, [
+    G('Breel Embolo', 'SUI', 17, false, true), G('Boualem Khoukhi', 'QAT', 90, true),
+  ]),
   M('B3', 'B', 'SUI', 'BIH', '2026-06-18', '15:00', null, null, 0, 0, 'SoFi Stadium, Inglewood', 2),
   M('B4', 'B', 'CAN', 'QAT', '2026-06-18', '18:00', null, null, 0, 0, 'BC Place, Vancouver', 2),
   M('B5', 'B', 'BIH', 'QAT', '2026-06-24', '17:00', null, null, 0, 0, 'TBD', 3),
   M('B6', 'B', 'SUI', 'CAN', '2026-06-24', '17:00', null, null, 0, 0, 'TBD', 3),
 
   // ===== GROUP C =====
-  M('C1', 'C', 'BRA', 'MAR', '2026-06-13', '18:00', null, null, 0, 0, 'MetLife Stadium, East Rutherford', 1),
-  M('C2', 'C', 'HAI', 'SCO', '2026-06-13', '21:00', null, null, 0, 0, 'Gillette Stadium, Foxborough', 1),
+  M('C1', 'C', 'BRA', 'MAR', '2026-06-13', '18:00', 1, 1, 0, 0, 'MetLife Stadium, East Rutherford', 1, [
+    G('Ismael Saibari', 'MAR', 21), G('Vinícius Júnior', 'BRA', 32),
+  ]),
+  M('C2', 'C', 'HAI', 'SCO', '2026-06-13', '21:00', 0, 1, 0, 0, 'Gillette Stadium, Foxborough', 1, [
+    G('John McGinn', 'SCO', 28),
+  ]),
   M('C3', 'C', 'SCO', 'MAR', '2026-06-19', '18:00', null, null, 0, 0, 'Gillette Stadium, Foxborough', 2),
   M('C4', 'C', 'BRA', 'HAI', '2026-06-19', '20:30', null, null, 0, 0, 'Lincoln Financial Field, Philadelphia', 2),
   M('C5', 'C', 'MAR', 'HAI', '2026-06-24', '18:00', null, null, 0, 0, 'Mercedes-Benz Stadium, Atlanta', 3),
   M('C6', 'C', 'SCO', 'BRA', '2026-06-24', '18:00', null, null, 0, 0, 'TBD', 3),
 
   // ===== GROUP D =====
-  M('D1', 'D', 'USA', 'PAR', '2026-06-12', '21:00', null, null, 0, 0, 'SoFi Stadium, Inglewood', 1),
-  M('D2', 'D', 'AUS', 'TUR', '2026-06-14', '00:00', null, null, 0, 0, 'BC Place, Vancouver', 1),
+  M('D1', 'D', 'USA', 'PAR', '2026-06-12', '21:00', 4, 1, 0, 0, 'SoFi Stadium, Inglewood', 1, [
+    G('Damián Bobadilla', 'PAR', 7, true), G('Folarin Balogun', 'USA', 31), G('Folarin Balogun', 'USA', 45),
+    G('Mauricio', 'PAR', 73), G('Giovanni Reyna', 'USA', 90),
+  ]),
+  M('D2', 'D', 'AUS', 'TUR', '2026-06-14', '00:00', 2, 0, 0, 0, 'BC Place, Vancouver', 1, [
+    G('Nestory Irankunda', 'AUS', 27), G('Connor Metcalfe', 'AUS', 75),
+  ]),
   M('D3', 'D', 'USA', 'AUS', '2026-06-19', '15:00', null, null, 0, 0, 'Lumen Field, Seattle', 2),
   M('D4', 'D', 'TUR', 'PAR', '2026-06-19', '23:00', null, null, 0, 0, "Levi's Stadium, Santa Clara", 2),
   M('D5', 'D', 'TUR', 'USA', '2026-06-25', '22:00', null, null, 0, 0, 'TBD', 3),
   M('D6', 'D', 'PAR', 'AUS', '2026-06-25', '22:00', null, null, 0, 0, 'TBD', 3),
 
   // ===== GROUP E =====
-  M('E1', 'E', 'GER', 'CUW', '2026-06-14', '13:00', null, null, 0, 0, 'NRG Stadium, Houston', 1),
+  M('E1', 'E', 'GER', 'CUW', '2026-06-14', '13:00', 7, 1, 0, 0, 'NRG Stadium, Houston', 1, [
+    G('Felix Nmecha', 'GER', 6), G('Livano Comenencia', 'CUW', 21),
+    G('Nico Schlotterbeck', 'GER', 38), G('Kai Havertz', 'GER', 43),
+    G('Jamal Musiala', 'GER', 47), G('Nathaniel Brown', 'GER', 68),
+    G('Deniz Undav', 'GER', 78), G('Kai Havertz', 'GER', 88),
+  ]),
   M('E2', 'E', 'CIV', 'ECU', '2026-06-14', '19:00', null, null, 0, 0, 'Lincoln Financial Field, Philadelphia', 1),
   M('E3', 'E', 'GER', 'CIV', '2026-06-20', '16:00', null, null, 0, 0, 'BMO Field, Toronto', 2),
   M('E4', 'E', 'ECU', 'CUW', '2026-06-20', '20:00', null, null, 0, 0, 'Arrowhead Stadium, Kansas City', 2),
@@ -148,7 +173,10 @@ export const MATCHES = [
   M('E6', 'E', 'CUW', 'CIV', '2026-06-25', '16:00', null, null, 0, 0, 'TBD', 3),
 
   // ===== GROUP F =====
-  M('F1', 'F', 'NED', 'JPN', '2026-06-14', '16:00', null, null, 0, 0, 'AT&T Stadium, Arlington', 1),
+  M('F1', 'F', 'NED', 'JPN', '2026-06-14', '16:00', 2, 2, 0, 0, 'AT&T Stadium, Arlington', 1, [
+    G('Virgil van Dijk', 'NED', 51), G('Keito Nakamura', 'JPN', 58),
+    G('Crysencio Summerville', 'NED', 64), G('Daichi Kamada', 'JPN', 88),
+  ]),
   M('F2', 'F', 'SWE', 'TUN', '2026-06-14', '22:00', null, null, 0, 0, 'Estadio BBVA, Monterrey', 1),
   M('F3', 'F', 'NED', 'SWE', '2026-06-20', '13:00', null, null, 0, 0, 'NRG Stadium, Houston', 2),
   M('F4', 'F', 'TUN', 'JPN', '2026-06-21', '00:00', null, null, 0, 0, 'Estadio BBVA, Monterrey', 2),

@@ -3,7 +3,7 @@ import { MATCHES, TEAMS, GROUP_TEAMS, GROUP_COLORS, GROUPS, calcStandings } from
 import { MatchRow } from './App';
 import './Groups.css';
 
-export default function Groups({ liveData }) {
+export default function Groups({ liveData, onMatchSelect }) {
   const [activeGroup, setActiveGroup] = useState('A');
   const [tab, setTab] = useState('matches');
 
@@ -58,7 +58,7 @@ export default function Groups({ liveData }) {
             {groupMatches.map((m, i) => (
               <React.Fragment key={m.id}>
                 {i > 0 && <div className="match-divider" />}
-                <MatchRow match={m} liveData={liveData} />
+                <MatchRow match={m} liveData={liveData} onPress={() => onMatchSelect && onMatchSelect(m)} />
               </React.Fragment>
             ))}
           </div>

@@ -264,6 +264,102 @@
 .tab-item--active .tab-label { color: var(--blue); }
 .tab-item--active .tab-icon { filter: none; }
 
+/* ── MATCH DETAIL PANEL ── */
+.md-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.4);
+  display: flex; align-items: flex-end;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.md-panel {
+  background: var(--white);
+  border-radius: 20px 20px 0 0;
+  padding: 20px 20px 40px;
+  width: 100%; max-height: 85vh; overflow-y: auto;
+  animation: slideUp 0.25s ease;
+  position: relative;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.md-close {
+  position: absolute; top: 16px; right: 16px;
+  background: var(--bg); border: none; border-radius: 50%;
+  width: 30px; height: 30px; font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-dim);
+}
+
+.md-group-tag {
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; margin-bottom: 16px;
+}
+
+.md-scoreboard {
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  align-items: center; gap: 12px; margin-bottom: 20px;
+}
+.md-team { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.md-team--right { align-items: center; }
+.md-flag { font-size: 32px; }
+.md-tname { font-size: 14px; font-weight: 600; color: var(--text); text-align: center; }
+.md-score-block { text-align: center; }
+.md-score {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 42px; font-weight: 800; color: var(--text);
+  line-height: 1; letter-spacing: -1px;
+}
+.md-time-big {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 32px; font-weight: 700; color: var(--text-dim); line-height: 1;
+}
+.md-status {
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  letter-spacing: 1px; text-transform: uppercase; margin-top: 4px;
+}
+.md-status--live { color: var(--red); animation: pulse 1.5s infinite; }
+.md-status--ft { color: var(--green); }
+
+/* Goal scorers */
+.md-goals {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);
+  margin-bottom: 16px; padding: 12px 0;
+}
+.md-goals-col { display: flex; flex-direction: column; gap: 6px; }
+.md-goals-col--right { align-items: flex-end; border-left: 1px solid var(--border-light); padding-left: 12px; }
+.md-goals-col:first-child { padding-right: 12px; }
+.md-goal-row { display: flex; align-items: center; gap: 6px; }
+.md-goal-row--away { flex-direction: row-reverse; }
+.md-goal-icon { font-size: 13px; }
+.md-goal-text { font-size: 12px; color: var(--text); font-weight: 500; }
+
+/* Cards */
+.md-cards {
+  display: flex; gap: 16px; margin-bottom: 14px; font-size: 13px; color: var(--text-dim);
+}
+
+/* Meta */
+.md-meta {
+  display: flex; flex-direction: column; gap: 5px;
+  font-size: 12px; color: var(--text-muted); padding-top: 12px;
+  border-top: 1px solid var(--border-light);
+}
+
+/* ── SCORER NAMES IN MATCH ROW ── */
+.mr-team-info { display: flex; flex-direction: column; min-width: 0; }
+.mr-scorers {
+  font-size: 10px; color: var(--text-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-top: 1px;
+}
+.mr-chevron {
+  font-size: 18px; color: var(--text-muted); margin-top: auto; margin-bottom: auto;
+  align-self: center;
+}
+.match-row--tappable { cursor: pointer; }
+
 .status-btn {
   background: var(--bg);
   border: 1.5px solid var(--border);
