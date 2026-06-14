@@ -83,16 +83,19 @@ export const CONF_COLORS = {
   OFC: '#0067B1',
 };
 
-// ET to AEST: add 15 hours (AEST = UTC+10, ET = UTC-5 in summer)
-// Format: "YYYY-MM-DDTHH:MM" in AEST
+// Parse match times as Eastern Time (America/New_York) so DST is handled automatically.
+// In June 2026, the US is on EDT = UTC-4. AEST = UTC+10. Difference = 14 hours.
+// We store a plain UTC Date object; all display uses timeZone: 'Australia/Sydney'.
 const toAEST = (etDate, etTime) => {
-  // Parse ET datetime and add 15 hours
+  // Build an ISO string with the ET offset for June (-04:00 = EDT)
+  // Using Intl to safely parse: treat the date/time as New York local time
+  const isoET = `${etDate}T${etTime}:00`;
+  // Parse as if it's UTC, then adjust for EDT (UTC-4) to get true UTC
   const [year, month, day] = etDate.split('-').map(Number);
   const [hour, min] = etTime.split(':').map(Number);
-  const etMs = Date.UTC(year, month - 1, day, hour + 5, min); // ET = UTC-5
-  const aestMs = etMs + 10 * 3600 * 1000; // AEST = UTC+10
-  const d = new Date(aestMs);
-  return d;
+  // America/New_York in June = UTC-4 (EDT)
+  const utcMs = Date.UTC(year, month - 1, day, hour + 4, min);
+  return new Date(utcMs);
 };
 
 const M = (id, group, home, away, etDate, etTime, homeScore, awayScore, homeRed, awayRed, venue, matchday) => ({
