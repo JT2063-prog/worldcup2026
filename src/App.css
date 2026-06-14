@@ -15,9 +15,10 @@
   position: sticky;
   top: 0;
   z-index: 100;
+  padding-top: env(safe-area-inset-top, 0px);
 }
 .app-header-inner {
-  padding: 18px 20px 14px;
+  padding: 14px 20px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
