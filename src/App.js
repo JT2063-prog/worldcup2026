@@ -21,8 +21,10 @@ function MatchDetail({ match, liveData, onClose }) {
   const isDone = homeScore !== null && !isLive;
   const color = GROUP_COLORS[match.group];
 
-  const homeGoals = (match.goals || []).filter(g => g.team === match.home);
-  const awayGoals = (match.goals || []).filter(g => g.team === match.away);
+  // Prefer live goals (from API) over static goals (from data.js)
+  const allGoals = (live?.goals?.length > 0 ? live.goals : match.goals) || [];
+  const homeGoals = allGoals.filter(g => g.team === match.home);
+  const awayGoals = allGoals.filter(g => g.team === match.away);
 
   const aestFull = match.kickoffAEST.toLocaleString('en-AU', {
     timeZone: 'Australia/Sydney',
@@ -120,14 +122,16 @@ export function MatchRow({ match, liveData, onPress }) {
   const color = GROUP_COLORS[match.group];
   const homeRed = live?.homeRed ?? match.homeRed ?? 0;
   const awayRed = live?.awayRed ?? match.awayRed ?? 0;
-  const hasGoals = (match.goals || []).length > 0;
+  const liveGoals = live?.goals || [];
+  const allGoals = liveGoals.length > 0 ? liveGoals : (match.goals || []);
+  const hasGoals = allGoals.length > 0;
 
   const aestTime = match.kickoffAEST.toLocaleString('en-AU', {
     timeZone: 'Australia/Sydney', hour: '2-digit', minute: '2-digit', hour12: false
   });
 
-  const homeGoalPlayers = (match.goals || []).filter(g => g.team === match.home && !g.og).map(g => g.player.split(' ').pop());
-  const awayGoalPlayers = (match.goals || []).filter(g => g.team === match.away && !g.og).map(g => g.player.split(' ').pop());
+  const homeGoalPlayers = allGoals.filter(g => g.team === match.home && !g.og).map(g => g.player.split(' ').pop());
+  const awayGoalPlayers = allGoals.filter(g => g.team === match.away && !g.og).map(g => g.player.split(' ').pop());
 
   return (
     <div className={`match-row ${isLive ? 'match-row--live' : ''} ${(isDone || hasGoals) ? 'match-row--tappable' : ''}`}
@@ -297,7 +301,7 @@ export default function App() {
         {tab === 'groups'    && <Groups liveData={liveData} onMatchSelect={setSelectedMatch} />}
         {tab === 'bracket'   && <Bracket />}
         {tab === 'myteams'   && <MyTeams liveData={liveData} onMatchSelect={setSelectedMatch} />}
-        {tab === 'golden'    && <GoldenBoot />}
+        {tab === 'golden'    && <GoldenBoot liveData={liveData} />}
       </main>
 
       <nav className="tab-bar">

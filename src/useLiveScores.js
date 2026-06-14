@@ -1,45 +1,46 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-// worldcup26.ir — completely free, no API key required
-const API_URL = 'https://worldcup26.ir/get/games';
+// openfootball/worldcup.json - free, no key, community updated with scores + goalscorers
+// Structure: { name, matches: [{ team1, team2, score: { ft:[h,a], ht:[h,a] }, goals1:[{name,minute}], goals2:[...] }] }
+const API_URL = 'https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json';
 
 const NAME_MAP = {
-  'Mexico': 'MEX', 'South Africa': 'RSA', 'South Korea': 'KOR', 'Korea Republic': 'KOR',
-  'Czechia': 'CZE', 'Czech Republic': 'CZE',
-  'Canada': 'CAN', 'Bosnia and Herzegovina': 'BIH', 'Bosnia & Herzegovina': 'BIH',
+  'Mexico': 'MEX', 'South Africa': 'RSA', 'South Korea': 'KOR',
+  'Czech Republic': 'CZE', 'Czechia': 'CZE',
+  'Canada': 'CAN', 'Bosnia & Herzegovina': 'BIH', 'Bosnia and Herzegovina': 'BIH',
   'Qatar': 'QAT', 'Switzerland': 'SUI',
   'Brazil': 'BRA', 'Morocco': 'MAR', 'Haiti': 'HAI', 'Scotland': 'SCO',
   'USA': 'USA', 'United States': 'USA', 'Paraguay': 'PAR', 'Australia': 'AUS',
   'Turkey': 'TUR', 'Türkiye': 'TUR',
   'Germany': 'GER', 'Curaçao': 'CUW', 'Curacao': 'CUW',
-  "Ivory Coast": 'CIV', "Côte d'Ivoire": 'CIV',
+  'Ivory Coast': 'CIV', "Côte d'Ivoire": 'CIV',
   'Ecuador': 'ECU', 'Netherlands': 'NED', 'Japan': 'JPN', 'Sweden': 'SWE', 'Tunisia': 'TUN',
   'Belgium': 'BEL', 'Egypt': 'EGY', 'Iran': 'IRN', 'New Zealand': 'NZL',
   'Spain': 'ESP', 'Cape Verde': 'CPV', 'Saudi Arabia': 'KSA', 'Uruguay': 'URU',
   'France': 'FRA', 'Senegal': 'SEN', 'Iraq': 'IRQ', 'Norway': 'NOR',
   'Argentina': 'ARG', 'Algeria': 'ALG', 'Austria': 'AUT', 'Jordan': 'JOR',
   'Portugal': 'POR', 'Colombia': 'COL', 'Uzbekistan': 'UZB', 'DR Congo': 'COD',
-  'Democratic Republic of Congo': 'COD', 'Congo DR': 'COD',
   'England': 'ENG', 'Croatia': 'CRO', 'Panama': 'PAN', 'Ghana': 'GHA',
 };
 
-export function resolveTeamCode(name) {
+function resolveCode(name) {
   if (!name) return null;
-  return NAME_MAP[name] || NAME_MAP[name.trim()] || null;
+  // Strip path qualifiers like "UEFA Path D winner" — try partial match
+  const clean = name.trim();
+  if (NAME_MAP[clean]) return NAME_MAP[clean];
+  // Try matching any known name contained within the string
+  for (const [k, v] of Object.entries(NAME_MAP)) {
+    if (clean.includes(k)) return v;
+  }
+  return null;
 }
 
 export function phaseLabel(phase) {
-  const labels = { '1H': '1H', 'HT': 'HT', '2H': '2H', 'ET1': 'ET1', 'ET2': 'ET2', 'PEN': 'PEN', 'FT': 'FT', 'FT_PEN': 'FT (P)' };
-  return labels[phase] ?? phase;
+  const map = { '1H':'1H','HT':'HT','2H':'2H','ET':'ET','PEN':'PEN','FT':'FT' };
+  return map[phase] ?? phase;
 }
-
-export function isLivePhase(phase) {
-  return ['1H', '2H', 'ET1', 'ET2', 'PEN'].includes(phase);
-}
-
-export function isFinishedPhase(phase) {
-  return ['FT', 'FT_PEN', 'HT'].includes(phase);
-}
+export function isLivePhase(phase) { return ['1H','2H','ET','PEN'].includes(phase); }
+export function isFinishedPhase(phase) { return ['FT','HT'].includes(phase); }
 
 export function useLiveScores() {
   const [liveData, setLiveData] = useState({});
@@ -50,39 +51,42 @@ export function useLiveScores() {
   const fetchScores = useCallback(async () => {
     try {
       setStatus('fetching');
-      const res = await fetch(API_URL, { cache: 'no-store' });
+      const res = await fetch(`${API_URL}?t=${Date.now()}`, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
-      // API returns array of matches
-      const matches = Array.isArray(data) ? data : (data.games || data.matches || data.data || []);
-
+      // openfootball uses flat matches array (not rounds)
+      const matches = data.matches || [];
       const parsed = {};
+
       matches.forEach(m => {
-        // Try multiple field name patterns the API might use
-        const homeName = m.home_team || m.homeTeam || m.home || m.team_home;
-        const awayName = m.away_team || m.awayTeam || m.away || m.team_away;
-        const homeCode = resolveTeamCode(homeName);
-        const awayCode = resolveTeamCode(awayName);
+        const homeCode = resolveCode(m.team1);
+        const awayCode = resolveCode(m.team2);
         if (!homeCode || !awayCode) return;
 
         const key = `${homeCode}_${awayCode}`;
-        const hs = m.home_score ?? m.homeScore ?? m.score_home ?? m.goals_home ?? null;
-        const as = m.away_score ?? m.awayScore ?? m.score_away ?? m.goals_away ?? null;
-        const phase = m.phase || m.status || m.state || 'PRE';
+        const score = m.score;
+        if (!score) return; // not played yet
 
-        // Red cards from events
-        const events = m.events || m.cards || [];
-        let homeRed = 0, awayRed = 0;
-        events.forEach(e => {
-          if (e.type === 'red_card' || e.type === 'RED_CARD' || e.card === 'red') {
-            const code = resolveTeamCode(e.team);
-            if (code === homeCode) homeRed++;
-            else if (code === awayCode) awayRed++;
-          }
+        const ft = score.ft;   // [home, away]
+        const ht = score.ht;   // [home, away] half time
+
+        if (!ft && !ht) return;
+
+        // Parse goalscorers
+        const goals = [];
+        (m.goals1 || []).forEach(g => {
+          goals.push({ player: g.name, team: homeCode, minute: parseInt(g.minute) || 0, og: g.og || false, pen: g.pen || false });
+        });
+        (m.goals2 || []).forEach(g => {
+          goals.push({ player: g.name, team: awayCode, minute: parseInt(g.minute) || 0, og: g.og || false, pen: g.pen || false });
         });
 
-        parsed[key] = { homeScore: hs, awayScore: as, phase, homeRed, awayRed };
+        if (ft) {
+          parsed[key] = { homeScore: ft[0], awayScore: ft[1], phase: 'FT', homeRed: 0, awayRed: 0, goals };
+        } else if (ht) {
+          parsed[key] = { homeScore: ht[0], awayScore: ht[1], phase: 'HT', homeRed: 0, awayRed: 0, goals };
+        }
       });
 
       setLiveData(parsed);
@@ -95,9 +99,7 @@ export function useLiveScores() {
   }, []);
 
   useEffect(() => {
-    // Fetch immediately
     fetchScores();
-    // Then every 60 seconds
     pollRef.current = setInterval(fetchScores, 60 * 1000);
     return () => clearInterval(pollRef.current);
   }, [fetchScores]);

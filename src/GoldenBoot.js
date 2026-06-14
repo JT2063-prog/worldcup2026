@@ -2,10 +2,13 @@ import React from 'react';
 import { MATCHES, TEAMS } from './data';
 import './GoldenBoot.css';
 
-export function calcGoldenBoot() {
+export function calcGoldenBoot(liveData = {}) {
   const scorers = {};
   MATCHES.forEach(m => {
-    (m.goals || []).forEach(g => {
+    const key = `${m.home}_${m.away}`;
+    const liveGoals = liveData[key]?.goals || [];
+    const goals = liveGoals.length > 0 ? liveGoals : (m.goals || []);
+    goals.forEach(g => {
       if (g.og) return; // exclude own goals
       const key = `${g.player}__${g.team}`;
       if (!scorers[key]) scorers[key] = { player: g.player, team: g.team, goals: 0, pens: 0, matches: new Set() };
@@ -19,8 +22,8 @@ export function calcGoldenBoot() {
     .map(s => ({ ...s, matches: s.matches.size }));
 }
 
-export default function GoldenBoot() {
-  const scorers = calcGoldenBoot();
+export default function GoldenBoot({ liveData = {} }) {
+  const scorers = calcGoldenBoot(liveData);
   const top = scorers[0]?.goals || 0;
 
   return (
