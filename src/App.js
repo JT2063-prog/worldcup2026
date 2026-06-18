@@ -5,6 +5,7 @@ import Groups from './Groups';
 import MyTeams from './MyTeams';
 import Bracket from './Bracket';
 import GoldenBoot from './GoldenBoot';
+import Tipping from './Tipping';
 import './App.css';
 
 // ── MATCH DETAIL PANEL ──
@@ -260,7 +261,7 @@ export default function App() {
   const [tab, setTab] = useState('schedule');
   const [now, setNow] = useState(new Date());
   const [selectedMatch, setSelectedMatch] = useState(null);
-  const { liveData, status, refetch } = useLiveScores();
+  const { liveData, status, source, refetch } = useLiveScores();
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30000);
@@ -270,6 +271,7 @@ export default function App() {
   const liveCount = Object.values(liveData).filter(d => isLivePhase(d.phase)).length;
 
   const statusLabel = { ok: '🟢', fetching: '🟡', error: '🔴', loading: '⚪' }[status] || '⚪';
+  const sourceLabel = source === 'wc2026api' ? 'Live' : source === 'openfootball' ? 'Live' : 'Loading';
 
   return (
     <div className="app">
@@ -291,7 +293,7 @@ export default function App() {
           </div>
           <div className="app-header-right">
             {liveCount > 0 && <span className="live-indicator">● {liveCount} Live</span>}
-            <button className="status-btn" onClick={refetch}>{statusLabel} Live</button>
+            <button className="status-btn" onClick={refetch}>{statusLabel} {sourceLabel}</button>
           </div>
         </div>
       </header>
@@ -302,6 +304,7 @@ export default function App() {
         {tab === 'bracket'   && <Bracket />}
         {tab === 'myteams'   && <MyTeams liveData={liveData} onMatchSelect={setSelectedMatch} />}
         {tab === 'golden'    && <GoldenBoot liveData={liveData} />}
+        {tab === 'tipping'   && <Tipping liveData={liveData} />}
       </main>
 
       <nav className="tab-bar">
@@ -310,7 +313,8 @@ export default function App() {
           { id: 'groups',   icon: '⚽', label: 'Groups'   },
           { id: 'bracket',  icon: '🏆', label: 'Bracket'  },
           { id: 'myteams',  icon: '★',  label: 'My Teams' },
-          { id: 'golden',   icon: '👟', label: 'Top Scorers' },
+          { id: 'golden',   icon: '👟', label: 'Scorers' },
+          { id: 'tipping',  icon: '🎯', label: 'Tipping'  },
         ].map(t => (
           <button key={t.id}
             className={`tab-item ${tab === t.id ? 'tab-item--active' : ''}`}
