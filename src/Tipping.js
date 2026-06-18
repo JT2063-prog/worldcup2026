@@ -36,11 +36,19 @@ function TipCard({ match, tip, onTip, liveData, disabled }) {
   const live = liveData?.[key];
   const homeScore = live?.homeScore ?? match.homeScore;
   const awayScore = live?.awayScore ?? match.awayScore;
+
+  // Live clock — re-renders every 30s so lock state updates automatically
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(t);
+  }, []);
+
   const isDone = homeScore !== null;
   const phase = live?.phase || (isDone ? 'FT' : 'PRE');
   const isLive = isLivePhase(phase);
-  const locked = disabled || isDone || isLive ||
-    (new Date() >= match.kickoffAEST);
+  // Lock tip if: past kickoff time OR match is live OR match is done
+  const locked = disabled || isDone || isLive || now >= match.kickoffAEST;
 
   const actualResult = isDone ? getResult(homeScore, awayScore) : null;
   const tipResult = tip?.result || null;
@@ -66,10 +74,11 @@ function TipCard({ match, tip, onTip, liveData, disabled }) {
       <div className="tip-card-meta">
         <span className="tip-group" style={{ color }}>GRP {match.group}</span>
         <span className="tip-kickoff">{aestTime} AEST</span>
-        {locked && !isDone && <span className="tip-locked-badge">🔒 Locked</span>}
-        {isDone && (
-          <span className={`tip-pts-badge ${pts > 0 ? 'tip-pts-badge--scored' : 'tip-pts-badge--zero'}`}>
-            {pts !== null ? `${pts > 0 ? '+' : ''}${pts} pts` : ''}
+        {isLive && <span className="tip-live-badge">● {phase}</span>}
+        {!isLive && locked && !isDone && <span className="tip-locked-badge">⏳ Pending result</span>}
+        {!isLive && locked && isDone && (
+          <span className={`tip-pts-badge ${pts > 0 ? 'tip-pts-badge--scored' : tipResult ? 'tip-pts-badge--zero' : 'tip-pts-badge--notipped'}`}>
+            {tipResult ? (pts > 0 ? `+${pts} pts` : '0 pts') : 'Not tipped'}
           </span>
         )}
       </div>
@@ -231,23 +240,22 @@ export default function Tipping({ liveData }) {
     save(`gb_${name}`, player);
   };
 
-  const upcomingMatches = MATCHES
-    .filter(m => {
-      const key = `${m.home}_${m.away}`;
-      const live = liveData?.[key];
-      const hs = live?.homeScore ?? m.homeScore;
-      return hs === null && !isLivePhase(live?.phase);
-    })
-    .sort((a, b) => a.kickoffAEST - b.kickoffAEST);
+  // Live clock for the main component too
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(t);
+  }, []);
 
-  const completedMatches = MATCHES
-    .filter(m => {
-      const key = `${m.home}_${m.away}`;
-      const live = liveData?.[key];
-      const hs = live?.homeScore ?? m.homeScore;
-      return hs !== null;
-    })
+  // All matches sorted by kickoff
+  const allMatches = [...MATCHES].sort((a, b) => a.kickoffAEST - b.kickoffAEST);
+
+  // Past matches (kicked off already) - show as results/locked, newest first
+  const pastMatches = allMatches.filter(m => m.kickoffAEST <= now)
     .sort((a, b) => b.kickoffAEST - a.kickoffAEST);
+
+  // Future matches - open for tipping
+  const futureMatches = allMatches.filter(m => m.kickoffAEST > now);
 
   return (
     <div className="tipping-view">
@@ -305,18 +313,24 @@ export default function Tipping({ liveData }) {
           )}
           {name && (
             <>
-              {completedMatches.length > 0 && (
+              {pastMatches.length > 0 && (
                 <>
-                  <div className="tip-section-label">Results</div>
-                  {completedMatches.map(m => (
+                  <div className="tip-section-label">
+                    Results — {pastMatches.filter(m => {
+                      const key = `${m.home}_${m.away}`;
+                      const hs = liveData?.[key]?.homeScore ?? m.homeScore;
+                      return hs !== null;
+                    }).length} completed
+                  </div>
+                  {pastMatches.map(m => (
                     <TipCard key={m.id} match={m} tip={tips[m.id]} onTip={handleTip} liveData={liveData} disabled={!name} />
                   ))}
                 </>
               )}
-              {upcomingMatches.length > 0 && (
+              {futureMatches.length > 0 && (
                 <>
                   <div className="tip-section-label">Upcoming — tip before kickoff</div>
-                  {upcomingMatches.map(m => (
+                  {futureMatches.map(m => (
                     <TipCard key={m.id} match={m} tip={tips[m.id]} onTip={handleTip} liveData={liveData} disabled={!name} />
                   ))}
                 </>
