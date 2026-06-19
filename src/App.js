@@ -194,11 +194,22 @@ export function MatchRow({ match, liveData, onPress }) {
 
 // ── SCHEDULE VIEW ──
 function Schedule({ liveData, onMatchSelect }) {
-  const [filter, setFilter] = useState('All');
   const now = new Date();
-  const filters = ['All', 'Live', 'Today', 'Upcoming', 'Results'];
-  const sorted = [...MATCHES].sort((a, b) => a.kickoffAEST - b.kickoffAEST);
   const todayStr = now.toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' });
+  const sorted = [...MATCHES].sort((a, b) => a.kickoffAEST - b.kickoffAEST);
+
+  // Smart default: Today if there are games today, else Upcoming
+  const hasTodayGames = sorted.some(m =>
+    m.kickoffAEST.toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' }) === todayStr
+  );
+  const hasLiveGames = sorted.some(m => {
+    const key = `${m.home}_${m.away}`;
+    return isLivePhase(liveData?.[key]?.phase);
+  });
+  const defaultFilter = hasLiveGames ? 'Live' : hasTodayGames ? 'Today' : 'Upcoming';
+  const [filter, setFilter] = useState(defaultFilter);
+
+  const filters = ['All', 'Live', 'Today', 'Upcoming', 'Results'];
 
   const filtered = sorted.filter(m => {
     const key = `${m.home}_${m.away}`;
@@ -270,8 +281,9 @@ export default function App() {
 
   const liveCount = Object.values(liveData).filter(d => isLivePhase(d.phase)).length;
 
-  const statusLabel = { ok: '🟢', fetching: '🟡', error: '🔴', loading: '⚪' }[status] || '⚪';
-  const sourceLabel = source === 'wc2026api' ? 'Live' : source === 'openfootball' ? 'Live' : 'Loading';
+  const isOnline = status === 'ok';
+  const statusClass = isOnline ? 'status-btn--online' : status === 'fetching' ? 'status-btn--checking' : 'status-btn--offline';
+  const statusText = isOnline ? 'Online' : status === 'fetching' ? 'Checking…' : 'Offline';
 
   return (
     <div className="app">
@@ -293,7 +305,9 @@ export default function App() {
           </div>
           <div className="app-header-right">
             {liveCount > 0 && <span className="live-indicator">● {liveCount} Live</span>}
-            <button className="status-btn" onClick={refetch}>{statusLabel} {sourceLabel}</button>
+            <button className={`status-btn ${statusClass}`} onClick={refetch}>
+              <span className="status-dot" /> {statusText}
+            </button>
           </div>
         </div>
       </header>
