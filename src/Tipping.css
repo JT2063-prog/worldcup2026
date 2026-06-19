@@ -178,7 +178,9 @@
 .tip-ladder { padding: 16px; }
 .tip-ladder-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .tip-ladder-header h2 { font-size: 22px; font-weight: 700; color: var(--text); }
+.tip-ladder-stats { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
 .tip-player-count { font-size: 13px; color: var(--text-muted); }
+.tip-active-count { font-size: 11px; color: var(--green); font-weight: 600; }
 .lb-empty { padding: 60px 20px; text-align: center; color: var(--text-muted); font-size: 15px; }
 .leaderboard { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
 .lb-row {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MATCHES, TEAMS, GROUP_COLORS } from './data';
 import { calcGoldenBoot } from './GoldenBoot';
 import { isLivePhase, isFinishedPhase } from './useLiveScores';
+import { saveTipper, loadTipper, loadAllTippers, countActiveSince } from './firebase';
 import './Tipping.css';
 
 const LS_PREFIX = 'wc2026_tip_';
@@ -20,6 +21,8 @@ function getResult(homeScore, awayScore) {
   return 'D';
 }
 
+// Local cache: just remembers "who am I" on this device so we don't
+// have to re-type a name every visit. All actual tip data lives in Firestore.
 function load(key) {
   try { return JSON.parse(localStorage.getItem(LS_PREFIX + key)) || null; } catch { return null; }
 }
@@ -140,12 +143,11 @@ function TipCard({ match, tip, onTip, liveData, disabled }) {
 }
 
 // ── LEADERBOARD ──
-function Leaderboard({ allTippers, liveData }) {
-  const scores = allTippers.map(tipper => {
+function Leaderboard({ tippers, liveData }) {
+  const scores = tippers.map(t => {
     let pts = 0;
-    const breakdown = [];
-    const tips = load(`tips_${tipper}`) || {};
-    const gbTip = load(`gb_${tipper}`);
+    const tips = t.tips || {};
+    const gbTip = t.goldenBootPick || '';
 
     MATCHES.forEach(m => {
       const tip = tips[m.id];
@@ -166,7 +168,6 @@ function Leaderboard({ allTippers, liveData }) {
         if (exactScore) matchPts += RESULT_PTS.exactScore;
       }
       pts += matchPts;
-      if (matchPts > 0) breakdown.push({ match: `${TEAMS[m.home]?.name} vs ${TEAMS[m.away]?.name}`, pts: matchPts });
     });
 
     // Golden boot bonus
@@ -177,7 +178,7 @@ function Leaderboard({ allTippers, liveData }) {
       if (isTop) pts += RESULT_PTS.goldenBoot;
     }
 
-    return { tipper, pts, breakdown, gbTip };
+    return { tipper: t.name, pts, gbTip };
   }).sort((a, b) => b.pts - a.pts);
 
   if (scores.length === 0) return (
@@ -206,38 +207,67 @@ function Leaderboard({ allTippers, liveData }) {
 export default function Tipping({ liveData }) {
   const [name, setName] = useState(() => load('my_name') || '');
   const [draftName, setDraftName] = useState('');
-  const [allTippers, setAllTippers] = useState(() => load('all_tippers') || []);
-  const [tips, setTips] = useState(() => load(`tips_${load('my_name')}`) || {});
-  const [gbPick, setGbPick] = useState(() => load(`gb_${load('my_name')}`) || '');
-  const [subTab, setSubTab] = useState(name ? 'tips' : 'join');
+  const [tippers, setTippers] = useState([]);
+  const [tips, setTips] = useState({});
+  const [gbPick, setGbPick] = useState('');
+  const [subTab, setSubTab] = useState(load('my_name') ? 'tips' : 'join');
+  const [syncing, setSyncing] = useState(false);
+  const [loadingLadder, setLoadingLadder] = useState(true);
 
   const topScorers = calcGoldenBoot(liveData);
 
-  const joinComp = () => {
+  // Load this device's saved name's tips from Firestore on mount
+  useEffect(() => {
+    const savedName = load('my_name');
+    if (!savedName) return;
+    (async () => {
+      const record = await loadTipper(savedName);
+      if (record) {
+        setTips(record.tips || {});
+        setGbPick(record.goldenBootPick || '');
+      }
+    })();
+  }, []);
+
+  // Load the full ladder from Firestore whenever the Ladder tab is opened
+  useEffect(() => {
+    if (subTab !== 'leaderboard') return;
+    setLoadingLadder(true);
+    loadAllTippers().then(all => {
+      setTippers(all);
+      setLoadingLadder(false);
+    });
+  }, [subTab]);
+
+  const joinComp = async () => {
     const n = draftName.trim();
     if (!n) return;
     save('my_name', n);
-    const existing = load('all_tippers') || [];
-    if (!existing.includes(n)) {
-      const updated = [...existing, n];
-      save('all_tippers', updated);
-      setAllTippers(updated);
-    }
     setName(n);
-    setTips(load(`tips_${n}`) || {});
-    setGbPick(load(`gb_${n}`) || '');
+    setSyncing(true);
+    // Check if this name already has tips saved (rejoining on a new device)
+    const existing = await loadTipper(n);
+    if (existing) {
+      setTips(existing.tips || {});
+      setGbPick(existing.goldenBootPick || '');
+    } else {
+      await saveTipper(n, {}, '');
+      setTips({});
+      setGbPick('');
+    }
+    setSyncing(false);
     setSubTab('tips');
   };
 
-  const handleTip = (matchId, result, homeScore, awayScore) => {
+  const handleTip = async (matchId, result, homeScore, awayScore) => {
     const updated = { ...tips, [matchId]: { result, homeScore, awayScore } };
-    setTips(updated);
-    save(`tips_${name}`, updated);
+    setTips(updated); // instant UI update
+    await saveTipper(name, updated, gbPick); // sync to Firestore
   };
 
-  const handleGBPick = (player) => {
+  const handleGBPick = async (player) => {
     setGbPick(player);
-    save(`gb_${name}`, player);
+    await saveTipper(name, tips, player);
   };
 
   // Live clock for the main component too
@@ -289,7 +319,9 @@ export default function Tipping({ liveData }) {
                 <input className="tip-name-input" type="text" placeholder="Your name"
                   value={draftName} onChange={e => setDraftName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && joinComp()} />
-                <button className="tip-join-btn" onClick={joinComp}>Join →</button>
+                <button className="tip-join-btn" onClick={joinComp} disabled={syncing}>
+                  {syncing ? 'Joining…' : 'Join →'}
+                </button>
               </div>
             </>
           )}
@@ -415,10 +447,17 @@ export default function Tipping({ liveData }) {
         <div className="tip-ladder">
           <div className="tip-ladder-header">
             <h2>Ladder</h2>
-            <span className="tip-player-count">{allTippers.length} player{allTippers.length !== 1 ? 's' : ''}</span>
+            <div className="tip-ladder-stats">
+              <span className="tip-player-count">{tippers.length} player{tippers.length !== 1 ? 's' : ''}</span>
+              <span className="tip-active-count">● {countActiveSince(tippers, 24)} active today</span>
+            </div>
           </div>
-          <Leaderboard allTippers={allTippers} liveData={liveData} />
-          <p className="tip-ladder-note">Tips lock at kickoff · Points auto-update after each match</p>
+          {loadingLadder ? (
+            <div className="lb-empty"><p>Loading ladder…</p></div>
+          ) : (
+            <Leaderboard tippers={tippers} liveData={liveData} />
+          )}
+          <p className="tip-ladder-note">Tips lock at kickoff · Points auto-update after each match · Shared live across all players</p>
         </div>
       )}
     </div>
