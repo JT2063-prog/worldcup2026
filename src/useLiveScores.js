@@ -1,10 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-// Primary: wc2026api.com (premium key - real-time)
-// Fallback: openfootball GitHub JSON (free, community updated)
+// wc2026api.com - premium key, real-time scores during matches
 const WC_API = 'https://api.wc2026api.com/matches';
 const WC_KEY = 'wc26_28BSv81D2UZyAetHA7GnMf';
-const FALLBACK_API = 'https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json';
 
 const NAME_MAP = {
   'Mexico':'MEX','South Africa':'RSA','South Korea':'KOR','Korea Republic':'KOR',
@@ -41,7 +39,6 @@ export function phaseLabel(phase) {
 export function isLivePhase(phase) { return ['1H','2H','ET','PEN'].includes(phase); }
 export function isFinishedPhase(phase) { return ['FT','FT_PEN','HT'].includes(phase); }
 
-// Parse wc2026api.com response
 function parseWCAPI(matches) {
   const parsed = {};
   matches.forEach(m => {
@@ -53,7 +50,6 @@ function parseWCAPI(matches) {
     const as = m.away_score ?? m.score?.away ?? null;
     const phase = m.phase || m.status || 'PRE';
 
-    // Goals from events
     const goals = [];
     (m.events || []).forEach(e => {
       if (e.type === 'goal' || e.type === 'GOAL') {
@@ -62,7 +58,6 @@ function parseWCAPI(matches) {
       }
     });
 
-    // Red cards
     let homeRed = 0, awayRed = 0;
     (m.events || []).forEach(e => {
       if (e.type === 'red_card' || e.type === 'RED_CARD') {
@@ -77,29 +72,6 @@ function parseWCAPI(matches) {
   return parsed;
 }
 
-// Parse openfootball fallback
-function parseOpenFootball(matches) {
-  const parsed = {};
-  matches.forEach(m => {
-    const homeCode = resolveCode(m.team1);
-    const awayCode = resolveCode(m.team2);
-    if (!homeCode || !awayCode) return;
-    const key = `${homeCode}_${awayCode}`;
-    const score = m.score;
-    if (!score) return;
-    const ft = score.ft, ht = score.ht;
-    if (!ft && !ht) return;
-
-    const goals = [];
-    (m.goals1 || []).forEach(g => goals.push({ player: g.name, team: homeCode, minute: parseInt(g.minute)||0, og: g.og||false, pen: g.pen||false }));
-    (m.goals2 || []).forEach(g => goals.push({ player: g.name, team: awayCode, minute: parseInt(g.minute)||0, og: g.og||false, pen: g.pen||false }));
-
-    if (ft) parsed[key] = { homeScore: ft[0], awayScore: ft[1], phase: 'FT', homeRed:0, awayRed:0, goals, source: 'openfootball' };
-    else if (ht) parsed[key] = { homeScore: ht[0], awayScore: ht[1], phase: 'HT', homeRed:0, awayRed:0, goals, source: 'openfootball' };
-  });
-  return parsed;
-}
-
 export function useLiveScores() {
   const [liveData, setLiveData] = useState({});
   const [status, setStatus] = useState('loading');
@@ -109,7 +81,6 @@ export function useLiveScores() {
 
   const fetchScores = useCallback(async () => {
     setStatus('fetching');
-    // Try primary API first
     try {
       const res = await fetch(WC_API, {
         headers: { 'Authorization': `Bearer ${WC_KEY}` },
@@ -119,27 +90,20 @@ export function useLiveScores() {
         const data = await res.json();
         const matches = Array.isArray(data) ? data : (data.matches || data.data || []);
         if (matches.length > 0) {
-          setLiveData(parseWCAPI(matches));
+          const parsed = parseWCAPI(matches);
+          // Merge rather than replace — never let a thin response erase good data
+          setLiveData(prev => ({ ...prev, ...parsed }));
           setStatus('ok');
           setSource('wc2026api');
           setLastFetched(new Date());
           return;
         }
       }
-    } catch(e) { console.warn('Primary API failed:', e.message); }
-
-    // Fallback to openfootball
-    try {
-      const res = await fetch(`${FALLBACK_API}?t=${Date.now()}`, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const matches = data.matches || [];
-      setLiveData(parseOpenFootball(matches));
+      // API reachable but returned nothing useful this poll — don't wipe existing data
       setStatus('ok');
-      setSource('openfootball');
-      setLastFetched(new Date());
-    } catch(e) {
-      console.warn('Fallback API failed:', e.message);
+    } catch (e) {
+      console.warn('Live API failed:', e.message);
+      // Network/API down — keep showing last known liveData, don't clear it
       setStatus('error');
     }
   }, []);

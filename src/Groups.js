@@ -3,19 +3,18 @@ import { MATCHES, TEAMS, GROUP_TEAMS, GROUP_COLORS, GROUPS, calcStandings } from
 import { MatchRow } from './App';
 import './Groups.css';
 
-export default function Groups({ liveData, onMatchSelect }) {
+export default function Groups({ liveData, onMatchSelect, timeMode }) {
   const [activeGroup, setActiveGroup] = useState('A');
   const [tab, setTab] = useState('matches');
 
   const color = GROUP_COLORS[activeGroup];
   const groupMatches = MATCHES
     .filter(m => m.group === activeGroup)
-    .sort((a, b) => a.kickoffAEST - b.kickoffAEST);
+    .sort((a, b) => a.kickoffUTC - b.kickoffUTC);
   const standings = calcStandings(activeGroup, liveData);
 
   return (
     <div className="groups-view">
-      {/* Group selector */}
       <div className="group-selector">
         {GROUPS.map(g => (
           <button key={g}
@@ -27,20 +26,15 @@ export default function Groups({ liveData, onMatchSelect }) {
         ))}
       </div>
 
-      {/* Group header */}
       <div className="group-hero" style={{ borderColor: color }}>
         <div className="gh-title">
           <span className="gh-label" style={{ color }}>Group {activeGroup}</span>
           <div className="gh-flags">
             {GROUP_TEAMS[activeGroup].map(code => (
-              <span key={code} className="gh-flag" title={TEAMS[code]?.name}>
-                {TEAMS[code]?.flag}
-              </span>
+              <span key={code} className="gh-flag" title={TEAMS[code]?.name}>{TEAMS[code]?.flag}</span>
             ))}
           </div>
         </div>
-
-        {/* Matches / Table tabs */}
         <div className="gh-tabs">
           <button className={`gh-tab ${tab === 'matches' ? 'gh-tab--on' : ''}`}
             style={tab === 'matches' ? { color, borderColor: color } : {}}
@@ -51,14 +45,13 @@ export default function Groups({ liveData, onMatchSelect }) {
         </div>
       </div>
 
-      {/* Content */}
       <div className="group-content">
         {tab === 'matches' ? (
           <div className="match-list-card" style={{ margin: '16px 20px 0' }}>
             {groupMatches.map((m, i) => (
               <React.Fragment key={m.id}>
                 {i > 0 && <div className="match-divider" />}
-                <MatchRow match={m} liveData={liveData} onPress={() => onMatchSelect && onMatchSelect(m)} />
+                <MatchRow match={m} liveData={liveData} onPress={() => onMatchSelect && onMatchSelect(m)} timeMode={timeMode} />
               </React.Fragment>
             ))}
           </div>

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MATCHES, TEAMS, GROUP_COLORS } from './data';
-import { isLivePhase, isFinishedPhase, phaseLabel } from './useLiveScores';
+import { MATCHES, TEAMS } from './data';
 import { MatchRow } from './App';
 import './MyTeams.css';
 
@@ -10,12 +9,12 @@ const ALL_BY_CONF = {
   'UEFA': ['ENG','FRA','GER','ESP','POR','NED','BEL','CRO','SWE','NOR','AUT','SUI','CZE','SCO','TUR','BIH'],
   'CONMEBOL': ['ARG','BRA','COL','URU','ECU','PAR'],
   'CAF': ['MAR','SEN','EGY','GHA','TUN','RSA','ALG','CIV','CPV','COD'],
-  'AFC': ['AUS','JPN','KOR','KSA','IRN','IRQ','JOR','QAT','UZB'],
+  'AFC': ['AUS','JPN','KOR','KSA','IRN','IRQ','JOR','UZB'],
   'CONCACAF': ['USA','MEX','CAN','PAN','HAI','CUW'],
   'OFC': ['NZL'],
 };
 
-export default function MyTeams({ liveData, onMatchSelect }) {
+export default function MyTeams({ liveData, onMatchSelect, timeMode }) {
   const [followed, setFollowed] = useState(() => {
     try { return JSON.parse(localStorage.getItem(LS_KEY)) || ['AUS']; }
     catch { return ['AUS']; }
@@ -32,19 +31,16 @@ export default function MyTeams({ liveData, onMatchSelect }) {
 
   const myMatches = MATCHES
     .filter(m => followed.includes(m.home) || followed.includes(m.away))
-    .sort((a, b) => a.kickoffAEST - b.kickoffAEST);
+    .sort((a, b) => a.kickoffUTC - b.kickoffUTC);
 
   return (
     <div className="myteams-view">
-      {/* Header */}
       <div className="mt-topbar">
         <div className="mt-followed">
           {followed.length === 0
             ? <span className="mt-empty-label">No teams selected</span>
             : followed.map(c => (
-                <span key={c} className="mt-pill">
-                  {TEAMS[c]?.flag} {TEAMS[c]?.name}
-                </span>
+                <span key={c} className="mt-pill">{TEAMS[c]?.flag} {TEAMS[c]?.name}</span>
               ))
           }
         </div>
@@ -53,7 +49,6 @@ export default function MyTeams({ liveData, onMatchSelect }) {
         </button>
       </div>
 
-      {/* Team picker */}
       {showPicker && (
         <div className="mt-picker">
           {Object.entries(ALL_BY_CONF).map(([conf, codes]) => (
@@ -75,12 +70,9 @@ export default function MyTeams({ liveData, onMatchSelect }) {
         </div>
       )}
 
-      {/* Matches */}
       {!showPicker && (
         followed.length === 0 ? (
-          <div className="mt-no-teams">
-            <p>Tap <strong>Edit</strong> to follow your teams</p>
-          </div>
+          <div className="mt-no-teams"><p>Tap <strong>Edit</strong> to follow your teams</p></div>
         ) : myMatches.length === 0 ? (
           <div className="mt-no-teams"><p>No matches found</p></div>
         ) : (
@@ -99,7 +91,7 @@ export default function MyTeams({ liveData, onMatchSelect }) {
                     {matches.map((m, i) => (
                       <React.Fragment key={m.id}>
                         {i > 0 && <div className="match-divider" />}
-                        <MatchRow match={m} liveData={liveData} onPress={() => onMatchSelect && onMatchSelect(m)} />
+                        <MatchRow match={m} liveData={liveData} onPress={() => onMatchSelect && onMatchSelect(m)} timeMode={timeMode} />
                       </React.Fragment>
                     ))}
                   </div>

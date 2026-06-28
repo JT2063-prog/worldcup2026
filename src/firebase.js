@@ -18,12 +18,10 @@ export const db = getFirestore(app);
 
 const TIPPERS_COL = 'tippers';
 
-// Slugify a name into a safe document ID
 function slugify(name) {
   return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
-// Save/update a tipper's full record (name, tips, golden boot pick)
 export async function saveTipper(name, tips, goldenBootPick) {
   const id = slugify(name);
   if (!id) return null;
@@ -37,7 +35,6 @@ export async function saveTipper(name, tips, goldenBootPick) {
   return id;
 }
 
-// Load a single tipper by name
 export async function loadTipper(name) {
   const id = slugify(name);
   if (!id) return null;
@@ -47,13 +44,11 @@ export async function loadTipper(name) {
   return { id: snap.id, ...snap.data() };
 }
 
-// Load all tippers (for the ladder)
 export async function loadAllTippers() {
   const snap = await getDocs(collection(db, TIPPERS_COL));
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-// Count "active" tippers - updated within last N hours
 export function countActiveSince(tippers, hoursAgo = 24) {
   const cutoff = Date.now() - hoursAgo * 3600 * 1000;
   return tippers.filter(t => {

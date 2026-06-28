@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { MATCHES, GROUPS, GROUP_COLORS, TEAMS } from './data';
-import { useLiveScores, isLivePhase, isFinishedPhase, phaseLabel } from './useLiveScores';
+import { MATCHES, GROUP_COLORS, TEAMS } from './data';
+import { useLiveScores, isLivePhase, phaseLabel } from './useLiveScores';
+import { getTimeMode, setTimeMode, fmtTime, fmtDateLong, fmtDateTime, modeLabel } from './timeUtils';
 import Groups from './Groups';
 import MyTeams from './MyTeams';
 import Bracket from './Bracket';
@@ -9,7 +10,7 @@ import Tipping from './Tipping';
 import './App.css';
 
 // ── MATCH DETAIL PANEL ──
-function MatchDetail({ match, liveData, onClose }) {
+function MatchDetail({ match, liveData, onClose, timeMode }) {
   if (!match) return null;
   const home = TEAMS[match.home];
   const away = TEAMS[match.away];
@@ -22,26 +23,18 @@ function MatchDetail({ match, liveData, onClose }) {
   const isDone = homeScore !== null && !isLive;
   const color = GROUP_COLORS[match.group];
 
-  // Prefer live goals (from API) over static goals (from data.js)
-  const allGoals = (live?.goals?.length > 0 ? live.goals : match.goals) || [];
+  const staticGoalsList = match.goals || [];
+  const liveGoalsList = live?.goals || [];
+  const allGoals = staticGoalsList.length > 0 ? staticGoalsList : liveGoalsList;
   const homeGoals = allGoals.filter(g => g.team === match.home);
   const awayGoals = allGoals.filter(g => g.team === match.away);
-
-  const aestFull = match.kickoffAEST.toLocaleString('en-AU', {
-    timeZone: 'Australia/Sydney',
-    weekday: 'short', day: 'numeric', month: 'long',
-    hour: '2-digit', minute: '2-digit', hour12: false
-  });
 
   return (
     <div className="md-overlay" onClick={onClose}>
       <div className="md-panel" onClick={e => e.stopPropagation()}>
         <button className="md-close" onClick={onClose}>✕</button>
-
-        {/* Group tag */}
         <div className="md-group-tag" style={{ color }}>GROUP {match.group} · MD{match.matchday}</div>
 
-        {/* Teams & score */}
         <div className="md-scoreboard">
           <div className="md-team">
             <span className="md-flag">{home?.flag}</span>
@@ -51,12 +44,10 @@ function MatchDetail({ match, liveData, onClose }) {
             {isDone || isLive ? (
               <div className="md-score">{homeScore ?? '?'} – {awayScore ?? '?'}</div>
             ) : (
-              <div className="md-time-big">
-                {match.kickoffAEST.toLocaleString('en-AU', { timeZone: 'Australia/Sydney', hour: '2-digit', minute: '2-digit', hour12: false })}
-              </div>
+              <div className="md-time-big">{fmtTime(match.kickoffUTC, timeMode)}</div>
             )}
             <div className={`md-status ${isLive ? 'md-status--live' : isDone ? 'md-status--ft' : ''}`}>
-              {isLive ? `● ${phaseLabel(phase)}` : isDone ? 'Full Time' : 'AEST'}
+              {isLive ? `● ${phaseLabel(phase)}` : isDone ? 'Full Time' : modeLabel(timeMode)}
             </div>
           </div>
           <div className="md-team md-team--right">
@@ -65,25 +56,20 @@ function MatchDetail({ match, liveData, onClose }) {
           </div>
         </div>
 
-        {/* Goal scorers */}
         {(homeGoals.length > 0 || awayGoals.length > 0) && (
           <div className="md-goals">
             <div className="md-goals-col">
               {homeGoals.map((g, i) => (
                 <div key={i} className="md-goal-row md-goal-row--home">
                   <span className="md-goal-icon">⚽</span>
-                  <span className="md-goal-text">
-                    {g.player} {g.og ? '(OG)' : g.pen ? '(P)' : ''} {g.minute}'
-                  </span>
+                  <span className="md-goal-text">{g.player} {g.og ? '(OG)' : g.pen ? '(P)' : ''} {g.minute}'</span>
                 </div>
               ))}
             </div>
             <div className="md-goals-col md-goals-col--right">
               {awayGoals.map((g, i) => (
                 <div key={i} className="md-goal-row md-goal-row--away">
-                  <span className="md-goal-text">
-                    {g.minute}' {g.player} {g.og ? '(OG)' : g.pen ? '(P)' : ''}
-                  </span>
+                  <span className="md-goal-text">{g.minute}' {g.player} {g.og ? '(OG)' : g.pen ? '(P)' : ''}</span>
                   <span className="md-goal-icon">⚽</span>
                 </div>
               ))}
@@ -91,7 +77,6 @@ function MatchDetail({ match, liveData, onClose }) {
           </div>
         )}
 
-        {/* Red cards */}
         {(match.homeRed > 0 || match.awayRed > 0) && (
           <div className="md-cards">
             {match.homeRed > 0 && <span>{home?.name} {'🟥'.repeat(match.homeRed)}</span>}
@@ -99,10 +84,9 @@ function MatchDetail({ match, liveData, onClose }) {
           </div>
         )}
 
-        {/* Venue & date */}
         <div className="md-meta">
           <div>🏟 {match.venue}</div>
-          <div>🕐 {aestFull} AEST</div>
+          <div>🕐 {fmtDateTime(match.kickoffUTC, timeMode)} {modeLabel(timeMode)}</div>
         </div>
       </div>
     </div>
@@ -110,7 +94,7 @@ function MatchDetail({ match, liveData, onClose }) {
 }
 
 // ── MATCH ROW ──
-export function MatchRow({ match, liveData, onPress }) {
+export function MatchRow({ match, liveData, onPress, timeMode }) {
   const key = `${match.home}_${match.away}`;
   const live = liveData?.[key];
   const homeScore = live?.homeScore ?? match.homeScore;
@@ -123,13 +107,11 @@ export function MatchRow({ match, liveData, onPress }) {
   const color = GROUP_COLORS[match.group];
   const homeRed = live?.homeRed ?? match.homeRed ?? 0;
   const awayRed = live?.awayRed ?? match.awayRed ?? 0;
-  const liveGoals = live?.goals || [];
-  const allGoals = liveGoals.length > 0 ? liveGoals : (match.goals || []);
-  const hasGoals = allGoals.length > 0;
 
-  const aestTime = match.kickoffAEST.toLocaleString('en-AU', {
-    timeZone: 'Australia/Sydney', hour: '2-digit', minute: '2-digit', hour12: false
-  });
+  const liveGoals = live?.goals || [];
+  const staticGoals = match.goals || [];
+  const allGoals = staticGoals.length > 0 ? staticGoals : liveGoals;
+  const hasGoals = allGoals.length > 0;
 
   const homeGoalPlayers = allGoals.filter(g => g.team === match.home && !g.og).map(g => g.player.split(' ').pop());
   const awayGoalPlayers = allGoals.filter(g => g.team === match.away && !g.og).map(g => g.player.split(' ').pop());
@@ -137,27 +119,23 @@ export function MatchRow({ match, liveData, onPress }) {
   return (
     <div className={`match-row ${isLive ? 'match-row--live' : ''} ${(isDone || hasGoals) ? 'match-row--tappable' : ''}`}
       onClick={onPress}>
-      {/* Left: time/status */}
       <div className="mr-left">
         {isLive ? (
           <span className="mr-badge mr-badge--live">● {phaseLabel(phase)}</span>
         ) : isDone ? (
           <span className="mr-badge mr-badge--ft">FT</span>
         ) : (
-          <span className="mr-time">{aestTime}</span>
+          <span className="mr-time">{fmtTime(match.kickoffUTC, timeMode)}</span>
         )}
         <span className="mr-group" style={{ color }}>GRP {match.group}</span>
       </div>
 
-      {/* Centre */}
       <div className="mr-centre">
         <div className="mr-team">
           <span className="mr-flag">{home?.flag}</span>
           <div className="mr-team-info">
             <span className={`mr-name ${isDone && homeScore > awayScore ? 'mr-name--win' : ''}`}>{home?.name}</span>
-            {homeGoalPlayers.length > 0 && (
-              <span className="mr-scorers">{homeGoalPlayers.join(', ')}</span>
-            )}
+            {homeGoalPlayers.length > 0 && <span className="mr-scorers">{homeGoalPlayers.join(', ')}</span>}
           </div>
           {homeRed > 0 && <span className="mr-red">{'🟥'.repeat(Math.min(homeRed,2))}</span>}
         </div>
@@ -165,15 +143,12 @@ export function MatchRow({ match, liveData, onPress }) {
           <span className="mr-flag">{away?.flag}</span>
           <div className="mr-team-info">
             <span className={`mr-name ${isDone && awayScore > homeScore ? 'mr-name--win' : ''}`}>{away?.name}</span>
-            {awayGoalPlayers.length > 0 && (
-              <span className="mr-scorers">{awayGoalPlayers.join(', ')}</span>
-            )}
+            {awayGoalPlayers.length > 0 && <span className="mr-scorers">{awayGoalPlayers.join(', ')}</span>}
           </div>
           {awayRed > 0 && <span className="mr-red">{'🟥'.repeat(Math.min(awayRed,2))}</span>}
         </div>
       </div>
 
-      {/* Right: score */}
       <div className="mr-right">
         {homeScore !== null || isLive ? (
           <>
@@ -193,22 +168,20 @@ export function MatchRow({ match, liveData, onPress }) {
 }
 
 // ── SCHEDULE VIEW ──
-function Schedule({ liveData, onMatchSelect }) {
+function Schedule({ liveData, onMatchSelect, timeMode }) {
   const now = new Date();
-  const todayStr = now.toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' });
-  const sorted = [...MATCHES].sort((a, b) => a.kickoffAEST - b.kickoffAEST);
+  const todayStr = now.toLocaleDateString('en-AU', { timeZone: timeMode === 'AEST' ? 'Australia/Sydney' : undefined });
+  const sorted = [...MATCHES].sort((a, b) => a.kickoffUTC - b.kickoffUTC);
 
-  // Smart default: Today if there are games today, else Upcoming
   const hasTodayGames = sorted.some(m =>
-    m.kickoffAEST.toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' }) === todayStr
+    m.kickoffUTC.toLocaleDateString('en-AU', { timeZone: timeMode === 'AEST' ? 'Australia/Sydney' : undefined }) === todayStr
   );
   const hasLiveGames = sorted.some(m => {
     const key = `${m.home}_${m.away}`;
     return isLivePhase(liveData?.[key]?.phase);
   });
-  const defaultFilter = hasLiveGames ? 'Live' : hasTodayGames ? 'Today' : 'Upcoming';
+  const defaultFilter = hasLiveGames ? 'Live' : hasTodayGames ? 'Today' : 'Results';
   const [filter, setFilter] = useState(defaultFilter);
-
   const filters = ['All', 'Live', 'Today', 'Upcoming', 'Results'];
 
   const filtered = sorted.filter(m => {
@@ -218,19 +191,17 @@ function Schedule({ liveData, onMatchSelect }) {
     const phase = live?.phase || (hs !== null ? 'FT' : 'PRE');
     const isLive = isLivePhase(phase);
     const isDone = hs !== null && !isLive;
-    const matchDay = m.kickoffAEST.toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' });
+    const matchDay = m.kickoffUTC.toLocaleDateString('en-AU', { timeZone: timeMode === 'AEST' ? 'Australia/Sydney' : undefined });
     if (filter === 'Live') return isLive;
     if (filter === 'Today') return matchDay === todayStr;
-    if (filter === 'Upcoming') return !isDone && !isLive && m.kickoffAEST > now;
+    if (filter === 'Upcoming') return !isDone && !isLive && m.kickoffUTC > now;
     if (filter === 'Results') return isDone;
     return true;
   });
 
   const byDate = {};
   filtered.forEach(m => {
-    const d = m.kickoffAEST.toLocaleDateString('en-AU', {
-      timeZone: 'Australia/Sydney', weekday: 'long', day: 'numeric', month: 'long'
-    });
+    const d = fmtDateLong(m.kickoffUTC, timeMode);
     if (!byDate[d]) byDate[d] = [];
     byDate[d].push(m);
   });
@@ -239,9 +210,7 @@ function Schedule({ liveData, onMatchSelect }) {
     <div className="schedule-view">
       <div className="filter-row">
         {filters.map(f => (
-          <button key={f}
-            className={`filter-pill ${filter === f ? 'filter-pill--on' : ''}`}
-            onClick={() => setFilter(f)}>
+          <button key={f} className={`filter-pill ${filter === f ? 'filter-pill--on' : ''}`} onClick={() => setFilter(f)}>
             {f === 'Live' ? '● Live' : f}
           </button>
         ))}
@@ -256,7 +225,7 @@ function Schedule({ liveData, onMatchSelect }) {
               {matches.map((m, i) => (
                 <React.Fragment key={m.id}>
                   {i > 0 && <div className="match-divider" />}
-                  <MatchRow match={m} liveData={liveData} onPress={() => onMatchSelect(m)} />
+                  <MatchRow match={m} liveData={liveData} onPress={() => onMatchSelect(m)} timeMode={timeMode} />
                 </React.Fragment>
               ))}
             </div>
@@ -272,15 +241,21 @@ export default function App() {
   const [tab, setTab] = useState('schedule');
   const [now, setNow] = useState(new Date());
   const [selectedMatch, setSelectedMatch] = useState(null);
-  const { liveData, status, source, refetch } = useLiveScores();
+  const [timeMode, setTimeModeState] = useState(getTimeMode());
+  const { liveData, status, refetch } = useLiveScores();
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(t);
   }, []);
 
-  const liveCount = Object.values(liveData).filter(d => isLivePhase(d.phase)).length;
+  const toggleTimeMode = () => {
+    const next = timeMode === 'AEST' ? 'LOCAL' : 'AEST';
+    setTimeModeState(next);
+    setTimeMode(next);
+  };
 
+  const liveCount = Object.values(liveData).filter(d => isLivePhase(d.phase)).length;
   const isOnline = status === 'ok';
   const statusClass = isOnline ? 'status-btn--online' : status === 'fetching' ? 'status-btn--checking' : 'status-btn--offline';
   const statusText = isOnline ? 'Online' : status === 'fetching' ? 'Checking…' : 'Offline';
@@ -288,20 +263,14 @@ export default function App() {
   return (
     <div className="app">
       {selectedMatch && (
-        <MatchDetail match={selectedMatch} liveData={liveData} onClose={() => setSelectedMatch(null)} />
+        <MatchDetail match={selectedMatch} liveData={liveData} onClose={() => setSelectedMatch(null)} timeMode={timeMode} />
       )}
 
       <header className="app-header">
         <div className="app-header-inner">
           <div>
             <h1 className="app-title">World Cup 2026</h1>
-            <p className="app-sub">
-              {now.toLocaleString('en-AU', {
-                timeZone: 'Australia/Sydney',
-                weekday: 'short', day: 'numeric', month: 'short',
-                hour: '2-digit', minute: '2-digit', hour12: false
-              })} AEST
-            </p>
+            <p className="app-sub">{fmtDateTime(now, timeMode)} {modeLabel(timeMode)}</p>
           </div>
           <div className="app-header-right">
             {liveCount > 0 && <span className="live-indicator">● {liveCount} Live</span>}
@@ -310,15 +279,20 @@ export default function App() {
             </button>
           </div>
         </div>
+        <div className="time-toggle-row">
+          <button className="time-toggle-btn" onClick={toggleTimeMode}>
+            🌐 Showing {timeMode === 'AEST' ? 'AEST' : 'Local time'} · Tap to switch to {timeMode === 'AEST' ? 'your device time' : 'AEST'}
+          </button>
+        </div>
       </header>
 
       <main className="app-main">
-        {tab === 'schedule'  && <Schedule liveData={liveData} onMatchSelect={setSelectedMatch} />}
-        {tab === 'groups'    && <Groups liveData={liveData} onMatchSelect={setSelectedMatch} />}
-        {tab === 'bracket'   && <Bracket />}
-        {tab === 'myteams'   && <MyTeams liveData={liveData} onMatchSelect={setSelectedMatch} />}
-        {tab === 'golden'    && <GoldenBoot liveData={liveData} />}
-        {tab === 'tipping'   && <Tipping liveData={liveData} />}
+        {tab === 'schedule' && <Schedule liveData={liveData} onMatchSelect={setSelectedMatch} timeMode={timeMode} />}
+        {tab === 'groups'   && <Groups liveData={liveData} onMatchSelect={setSelectedMatch} timeMode={timeMode} />}
+        {tab === 'bracket'  && <Bracket liveData={liveData} timeMode={timeMode} />}
+        {tab === 'myteams'  && <MyTeams liveData={liveData} onMatchSelect={setSelectedMatch} timeMode={timeMode} />}
+        {tab === 'golden'   && <GoldenBoot liveData={liveData} />}
+        {tab === 'tipping'  && <Tipping liveData={liveData} />}
       </main>
 
       <nav className="tab-bar">
@@ -327,12 +301,10 @@ export default function App() {
           { id: 'groups',   icon: '⚽', label: 'Groups'   },
           { id: 'bracket',  icon: '🏆', label: 'Bracket'  },
           { id: 'myteams',  icon: '★',  label: 'My Teams' },
-          { id: 'golden',   icon: '👟', label: 'Scorers' },
+          { id: 'golden',   icon: '👟', label: 'Scorers'  },
           { id: 'tipping',  icon: '🎯', label: 'Tipping'  },
         ].map(t => (
-          <button key={t.id}
-            className={`tab-item ${tab === t.id ? 'tab-item--active' : ''}`}
-            onClick={() => setTab(t.id)}>
+          <button key={t.id} className={`tab-item ${tab === t.id ? 'tab-item--active' : ''}`} onClick={() => setTab(t.id)}>
             <span className="tab-icon">{t.icon}</span>
             <span className="tab-label">{t.label}</span>
           </button>

@@ -1,70 +1,23 @@
 .myteams-view { padding-bottom: 20px; }
-
-.mt-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
-  background: var(--white);
-  border-bottom: 1px solid var(--border);
-  gap: 12px;
-}
+.mt-topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: var(--white); border-bottom: 1px solid var(--border); gap: 12px; }
 .mt-followed { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
 .mt-empty-label { font-size: 14px; color: var(--text-muted); }
-.mt-pill {
-  display: flex; align-items: center; gap: 6px;
-  background: var(--blue-light); border: 1px solid var(--blue-mid);
-  color: var(--blue); font-size: 13px; font-weight: 600;
-  padding: 5px 12px; border-radius: 20px;
-}
-.mt-edit {
-  background: var(--blue); color: white;
-  border: none; font-size: 13px; font-weight: 600;
-  padding: 8px 18px; border-radius: 20px; cursor: pointer;
-  font-family: inherit; flex-shrink: 0;
-}
+.mt-pill { display: flex; align-items: center; gap: 6px; background: var(--blue-light); border: 1px solid var(--blue-mid); color: var(--blue); font-size: 13px; font-weight: 600; padding: 5px 12px; border-radius: 20px; }
+.mt-edit { background: var(--blue); color: white; border: none; font-size: 13px; font-weight: 600; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-family: inherit; flex-shrink: 0; }
 .mt-edit:active { opacity: 0.8; }
-
-/* Picker */
-.mt-picker {
-  padding: 16px 20px;
-  background: var(--white);
-  border-bottom: 1px solid var(--border);
-  max-height: 60vh;
-  overflow-y: auto;
-}
+.mt-picker { padding: 16px 20px; background: var(--white); border-bottom: 1px solid var(--border); max-height: 60vh; overflow-y: auto; }
 .mt-conf-section { margin-bottom: 20px; }
-.mt-conf-label {
-  font-size: 11px; font-weight: 700; letter-spacing: 1px;
-  color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;
-}
+.mt-conf-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
 .mt-conf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; }
-.mt-team-btn {
-  display: flex; align-items: center; gap: 7px;
-  background: var(--bg); border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm); padding: 9px 10px;
-  cursor: pointer; font-family: inherit; transition: all 0.12s; width: 100%;
-  font-size: 13px;
-}
+.mt-team-btn { display: flex; align-items: center; gap: 7px; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 9px 10px; cursor: pointer; font-family: inherit; transition: all 0.12s; width: 100%; font-size: 13px; }
 .mt-team-btn:active { transform: scale(0.96); }
 .mt-team-btn--on { background: var(--blue-light); border-color: var(--blue); }
 .mt-team-btn-name { flex: 1; text-align: left; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mt-team-btn--on .mt-team-btn-name { color: var(--blue); font-weight: 600; }
 .mt-check { color: var(--blue); font-weight: 700; font-size: 14px; }
-
-/* No teams */
-.mt-no-teams {
-  text-align: center; padding: 60px 20px;
-  color: var(--text-muted); font-size: 15px;
-}
-.mt-no-teams strong { color: var(--text); }
-
-/* Team sections */
+.mt-no-teams { text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 15px; }
 .mt-matches { padding-top: 4px; }
 .mt-team-section { padding: 20px 0 0; }
-.mt-team-header {
-  display: flex; align-items: center; gap: 10px;
-  padding: 0 20px 10px;
-}
+.mt-team-header { display: flex; align-items: center; gap: 10px; padding: 0 20px 10px; }
 .mt-team-flag { font-size: 26px; }
 .mt-team-name { font-size: 18px; font-weight: 700; color: var(--text); }

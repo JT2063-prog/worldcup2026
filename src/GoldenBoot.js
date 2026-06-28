@@ -6,15 +6,17 @@ export function calcGoldenBoot(liveData = {}) {
   const scorers = {};
   MATCHES.forEach(m => {
     const key = `${m.home}_${m.away}`;
+    const staticGoals = m.goals || [];
     const liveGoals = liveData[key]?.goals || [];
-    const goals = liveGoals.length > 0 ? liveGoals : (m.goals || []);
+    // Prefer verified data.js goals; fall back to live API only if none entered yet
+    const goals = staticGoals.length > 0 ? staticGoals : liveGoals;
     goals.forEach(g => {
-      if (g.og) return; // exclude own goals
-      const key = `${g.player}__${g.team}`;
-      if (!scorers[key]) scorers[key] = { player: g.player, team: g.team, goals: 0, pens: 0, matches: new Set() };
-      scorers[key].goals++;
-      if (g.pen) scorers[key].pens++;
-      scorers[key].matches.add(m.id);
+      if (g.og) return;
+      const k = `${g.player}__${g.team}`;
+      if (!scorers[k]) scorers[k] = { player: g.player, team: g.team, goals: 0, pens: 0, matches: new Set() };
+      scorers[k].goals++;
+      if (g.pen) scorers[k].pens++;
+      scorers[k].matches.add(m.id);
     });
   });
   return Object.values(scorers)
@@ -41,7 +43,6 @@ export default function GoldenBoot({ liveData = {} }) {
       {scorers.length === 0 ? (
         <div className="gb-empty">
           <p>No goals scored yet</p>
-          <p>Check back after the first matches</p>
         </div>
       ) : (
         <div className="gb-list">
@@ -77,7 +78,7 @@ export default function GoldenBoot({ liveData = {} }) {
       )}
 
       <div className="gb-note">
-        <p>P = penalty goal · Own goals not counted · Updated after each match</p>
+        <p>P = penalty goal · Own goals not counted</p>
       </div>
     </div>
   );
