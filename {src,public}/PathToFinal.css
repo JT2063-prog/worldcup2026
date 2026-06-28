@@ -1,0 +1,81 @@
+.ptf-view { padding: 16px 0 24px; }
+
+/* Quarter tabs */
+.ptf-q-tabs {
+  display: flex; gap: 8px; padding: 0 20px 16px; overflow-x: auto;
+}
+.ptf-q-tab {
+  background: var(--bg); border: 1.5px solid var(--border); color: var(--text-muted);
+  font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 20px;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0; font-family: inherit;
+  transition: all 0.15s;
+}
+.ptf-q-tab--on { background: color-mix(in srgb, var(--ac) 12%, white); border-color: var(--ac); color: var(--ac); }
+
+/* Quarter bracket block */
+.ptf-quarter { padding: 0 20px; margin-bottom: 24px; }
+.ptf-quarter-label {
+  font-size: 14px; font-weight: 800; color: var(--ac); text-transform: uppercase;
+  letter-spacing: 0.5px; margin-bottom: 12px; text-align: center;
+}
+.ptf-quarter-rounds { display: flex; gap: 10px; }
+.ptf-mini-col { flex: 1; min-width: 0; }
+.ptf-mini-title {
+  font-size: 10px; font-weight: 700; color: var(--text-muted); text-align: center;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+}
+.ptf-mini-matches { display: flex; flex-direction: column; justify-content: space-around; height: 100%; gap: 8px; }
+.ptf-mini-matches--r16 { padding: 18px 0; }
+.ptf-mini-matches--qf { padding: 48px 0; }
+
+/* Match box (shared by quarters + SF + final) */
+.ptf-match {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); overflow: hidden;
+  border-top: 2px solid var(--ac);
+}
+.ptf-match-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 8px; gap: 4px; border-bottom: 1px solid var(--border-light);
+}
+.ptf-match-row:last-child { border-bottom: none; }
+
+.ptf-pill { display: flex; align-items: center; gap: 5px; min-width: 0; flex: 1; }
+.ptf-flag { font-size: 14px; flex-shrink: 0; }
+.ptf-name {
+  font-size: 11px; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ptf-pill--win .ptf-name { color: var(--blue); font-weight: 700; }
+.ptf-pill--pending .ptf-name { color: var(--text-muted); font-style: italic; font-weight: 400; }
+.ptf-live-dot { color: var(--red); font-size: 7px; animation: pulse 1.5s infinite; }
+.ptf-score { font-size: 13px; font-weight: 800; color: var(--text); flex-shrink: 0; }
+
+/* Convergence section */
+.ptf-converge-label {
+  text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 1px; margin: 8px 20px 12px;
+  padding-top: 16px; border-top: 1px dashed var(--border);
+}
+.ptf-sf-row {
+  display: flex; gap: 14px; padding: 0 20px; margin-bottom: 8px;
+}
+.ptf-sf-item { flex: 1; }
+.ptf-sf-tag {
+  font-size: 10px; font-weight: 700; text-align: center; margin-bottom: 6px;
+  text-transform: uppercase; letter-spacing: 0.3px;
+}
+
+.ptf-final-wrap { padding: 16px 20px 0; max-width: 280px; margin: 0 auto; }
+
+.ptf-champion {
+  margin: 20px 20px 8px; padding: 16px;
+  background: var(--gold-bg); border: 1.5px solid #fde68a;
+  border-radius: var(--radius); text-align: center;
+  font-size: 15px; font-weight: 700; color: var(--gold);
+}
+
+.ptf-note {
+  text-align: center; font-size: 11px; color: var(--text-muted);
+  margin: 12px 20px 0;
+}
