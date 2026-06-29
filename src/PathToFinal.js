@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { TEAMS } from './data';
 import { KNOCKOUT_MATCHES } from './knockoutData';
+import { fmtDateTime, modeLabel } from './timeUtils';
 import './PathToFinal.css';
 
-// The 4 quarters of the draw — each is self-contained until the semis.
-// Quarter 1: R32-1..4 -> R16-1,2 -> QF-1 -> feeds SF-1
-// Quarter 2: R32-5..8 -> R16-3,4 -> QF-2 -> feeds SF-1
-// Quarter 3: R32-9..12 -> R16-5,6 -> QF-3 -> feeds SF-2
-// Quarter 4: R32-13..16 -> R16-7,8 -> QF-4 -> feeds SF-2
+// The 4 quarters of the real FIFA draw — verified against the official match-number
+// bracket tree (M73-M104). Each quarter is self-contained until the semis.
+// Quarter A: R32-1,3,4,6 -> R16-1,2 -> QF-1 -> feeds SF-1
+// Quarter B: R32-9,10,11,12 -> R16-5,6 -> QF-2 -> feeds SF-1
+// Quarter C: R32-2,5,7,8 -> R16-3,4 -> QF-3 -> feeds SF-2
+// Quarter D: R32-13,14,15,16 -> R16-7,8 -> QF-4 -> feeds SF-2
 const QUARTERS = [
-  { id: 'Q1', label: 'Quarter 1', accent: '#1a56db', r32: ['R32-1','R32-2','R32-3','R32-4'], r16: ['R16-1','R16-2'], qf: ['QF-1'] },
-  { id: 'Q2', label: 'Quarter 2', accent: '#0f9d58', r32: ['R32-5','R32-6','R32-7','R32-8'], r16: ['R16-3','R16-4'], qf: ['QF-2'] },
-  { id: 'Q3', label: 'Quarter 3', accent: '#d97706', r32: ['R32-9','R32-10','R32-11','R32-12'], r16: ['R16-5','R16-6'], qf: ['QF-3'] },
-  { id: 'Q4', label: 'Quarter 4', accent: '#dc2626', r32: ['R32-13','R32-14','R32-15','R32-16'], r16: ['R16-7','R16-8'], qf: ['QF-4'] },
+  { id: 'QA', label: 'Quarter A', accent: '#1a56db', r32: ['R32-1','R32-4','R32-3','R32-6'], r16: ['R16-2','R16-1'], qf: ['QF-1'] },
+  { id: 'QB', label: 'Quarter B', accent: '#0f9d58', r32: ['R32-12','R32-11','R32-10','R32-9'], r16: ['R16-5','R16-6'], qf: ['QF-2'] },
+  { id: 'QC', label: 'Quarter C', accent: '#d97706', r32: ['R32-5','R32-2','R32-7','R32-8'], r16: ['R16-3','R16-4'], qf: ['QF-3'] },
+  { id: 'QD', label: 'Quarter D', accent: '#dc2626', r32: ['R32-13','R32-16','R32-15','R32-14'], r16: ['R16-8','R16-7'], qf: ['QF-4'] },
 ];
 
 function buildResolvedMatches(liveData) {
@@ -61,7 +63,7 @@ function TeamPill({ code, isWinner, isLive }) {
   );
 }
 
-function MatchBox({ matchId, byId, accent }) {
+function MatchBox({ matchId, byId, accent, timeMode }) {
   const m = byId[matchId];
   if (!m) return null;
   const homeCode = resolveSlot(m, 'home', byId);
@@ -72,6 +74,11 @@ function MatchBox({ matchId, byId, accent }) {
 
   return (
     <div className="ptf-match" style={{ '--ac': accent }}>
+      {!hasScore && m.kickoffUTC && (
+        <div className="ptf-match-time">
+          {fmtDateTime(m.kickoffUTC, timeMode)} {modeLabel(timeMode)}
+        </div>
+      )}
       <div className="ptf-match-row">
         <TeamPill code={homeCode} isWinner={homeWin} />
         {hasScore && <span className="ptf-score">{m.homeScore}</span>}
@@ -84,7 +91,7 @@ function MatchBox({ matchId, byId, accent }) {
   );
 }
 
-function QuarterBracket({ quarter, byId }) {
+function QuarterBracket({ quarter, byId, timeMode }) {
   return (
     <div className="ptf-quarter" style={{ '--ac': quarter.accent }}>
       <div className="ptf-quarter-label">{quarter.label}</div>
@@ -92,19 +99,19 @@ function QuarterBracket({ quarter, byId }) {
         <div className="ptf-mini-col">
           <div className="ptf-mini-title">R32</div>
           <div className="ptf-mini-matches ptf-mini-matches--r32">
-            {quarter.r32.map(id => <MatchBox key={id} matchId={id} byId={byId} accent={quarter.accent} />)}
+            {quarter.r32.map(id => <MatchBox key={id} matchId={id} byId={byId} accent={quarter.accent} timeMode={timeMode} />)}
           </div>
         </div>
         <div className="ptf-mini-col">
           <div className="ptf-mini-title">R16</div>
           <div className="ptf-mini-matches ptf-mini-matches--r16">
-            {quarter.r16.map(id => <MatchBox key={id} matchId={id} byId={byId} accent={quarter.accent} />)}
+            {quarter.r16.map(id => <MatchBox key={id} matchId={id} byId={byId} accent={quarter.accent} timeMode={timeMode} />)}
           </div>
         </div>
         <div className="ptf-mini-col">
           <div className="ptf-mini-title">QF</div>
           <div className="ptf-mini-matches ptf-mini-matches--qf">
-            {quarter.qf.map(id => <MatchBox key={id} matchId={id} byId={byId} accent={quarter.accent} />)}
+            {quarter.qf.map(id => <MatchBox key={id} matchId={id} byId={byId} accent={quarter.accent} timeMode={timeMode} />)}
           </div>
         </div>
       </div>
@@ -112,9 +119,9 @@ function QuarterBracket({ quarter, byId }) {
   );
 }
 
-export default function PathToFinal({ liveData }) {
+export default function PathToFinal({ liveData, timeMode }) {
   const byId = buildResolvedMatches(liveData);
-  const [activeQ, setActiveQ] = useState('Q1');
+  const [activeQ, setActiveQ] = useState('QA');
 
   const sf = KNOCKOUT_MATCHES.filter(m => m.round === 'sf');
   const fin = KNOCKOUT_MATCHES.filter(m => m.round === 'f')[0];
@@ -141,24 +148,24 @@ export default function PathToFinal({ liveData }) {
       </div>
 
       {/* Active quarter bracket */}
-      <QuarterBracket quarter={QUARTERS.find(q => q.id === activeQ)} byId={byId} />
+      <QuarterBracket quarter={QUARTERS.find(q => q.id === activeQ)} byId={byId} timeMode={timeMode} />
 
       {/* Convergence: semis + final */}
       <div className="ptf-converge-label">Semi-finals converge here</div>
       <div className="ptf-sf-row">
         <div className="ptf-sf-item">
-          <div className="ptf-sf-tag" style={{ color: '#1a56db' }}>Q1 + Q2 winners</div>
-          <MatchBox matchId="SF-1" byId={byId} accent="#dc2626" />
+          <div className="ptf-sf-tag" style={{ color: '#1a56db' }}>Quarter A + Quarter B winners</div>
+          <MatchBox matchId="SF-1" byId={byId} accent="#dc2626" timeMode={timeMode} />
         </div>
         <div className="ptf-sf-item">
-          <div className="ptf-sf-tag" style={{ color: '#d97706' }}>Q3 + Q4 winners</div>
-          <MatchBox matchId="SF-2" byId={byId} accent="#dc2626" />
+          <div className="ptf-sf-tag" style={{ color: '#d97706' }}>Quarter C + Quarter D winners</div>
+          <MatchBox matchId="SF-2" byId={byId} accent="#dc2626" timeMode={timeMode} />
         </div>
       </div>
 
       <div className="ptf-final-wrap">
         <div className="ptf-converge-label">Final</div>
-        <MatchBox matchId="F-1" byId={byId} accent="#d97706" />
+        <MatchBox matchId="F-1" byId={byId} accent="#d97706" timeMode={timeMode} />
       </div>
 
       {champion && (

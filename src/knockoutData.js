@@ -42,19 +42,19 @@ export const KNOCKOUT_MATCHES = [
   { id: 'R32-16', round: 'r32', home: 'COL', away: 'GHA', kickoffUTC: CT('2026-07-03', '21:30'), venue: 'Arrowhead Stadium, Kansas City', homeScore: null, awayScore: null },
 
   // ── ROUND OF 16 ── July 4–7 (TBD until R32 results known)
-  { id: 'R16-1', round: 'r16', home: 'TBD', away: 'TBD', homeLabel: 'W R32-1', awayLabel: 'W R32-4', kickoffUTC: CT('2026-07-04', '13:00'), venue: 'NRG Stadium, Houston', homeScore: null, awayScore: null },
-  { id: 'R16-2', round: 'r16', home: 'TBD', away: 'TBD', homeLabel: 'W R32-3', awayLabel: 'W R32-6', kickoffUTC: ET('2026-07-04', '17:00'), venue: 'Lincoln Financial Field, Philadelphia', homeScore: null, awayScore: null },
-  { id: 'R16-3', round: 'r16', home: 'TBD', away: 'TBD', homeLabel: 'W R32-2', awayLabel: 'W R32-5', kickoffUTC: ET('2026-07-05', '16:00'), venue: 'MetLife Stadium, East Rutherford', homeScore: null, awayScore: null },
+  { id: 'R16-1', round: 'r16', home: 'TBD', away: 'TBD', homeLabel: 'W R32-3', awayLabel: 'W R32-6', kickoffUTC: ET('2026-07-04', '17:00'), venue: 'Lincoln Financial Field, Philadelphia', homeScore: null, awayScore: null },
+  { id: 'R16-2', round: 'r16', home: 'TBD', away: 'TBD', homeLabel: 'W R32-1', awayLabel: 'W R32-4', kickoffUTC: CT('2026-07-04', '13:00'), venue: 'NRG Stadium, Houston', homeScore: null, awayScore: null },
+  { id: 'R16-3', round: 'r16', home: 'TBD', away: 'TBD', homeLabel: 'W R32-5', awayLabel: 'W R32-2', kickoffUTC: ET('2026-07-05', '16:00'), venue: 'MetLife Stadium, East Rutherford', homeScore: null, awayScore: null },
   { id: 'R16-4', round: 'r16', home: 'TBD', away: 'TBD', homeLabel: 'W R32-7', awayLabel: 'W R32-8', kickoffUTC: CT('2026-07-05', '20:00'), venue: 'Estadio Azteca, Mexico City', homeScore: null, awayScore: null },
-  { id: 'R16-5', round: 'r16', home: 'TBD', away: 'TBD', homeLabel: 'W R32-11', awayLabel: 'W R32-12', kickoffUTC: CT('2026-07-06', '15:00'), venue: 'AT&T Stadium, Arlington', homeScore: null, awayScore: null },
-  { id: 'R16-6', round: 'r16', home: 'TBD', away: 'TBD', homeLabel: 'W R32-9', awayLabel: 'W R32-10', kickoffUTC: PT('2026-07-06', '17:00'), venue: 'Lumen Field, Seattle', homeScore: null, awayScore: null },
-  { id: 'R16-7', round: 'r16', home: 'TBD', away: 'TBD', homeLabel: 'W R32-14', awayLabel: 'W R32-15', kickoffUTC: ET('2026-07-07', '12:00'), venue: 'Mercedes-Benz Stadium, Atlanta', homeScore: null, awayScore: null },
+  { id: 'R16-5', round: 'r16', home: 'TBD', away: 'TBD', homeLabel: 'W R32-12', awayLabel: 'W R32-11', kickoffUTC: CT('2026-07-06', '15:00'), venue: 'AT&T Stadium, Arlington', homeScore: null, awayScore: null },
+  { id: 'R16-6', round: 'r16', home: 'TBD', away: 'TBD', homeLabel: 'W R32-10', awayLabel: 'W R32-9', kickoffUTC: PT('2026-07-06', '17:00'), venue: 'Lumen Field, Seattle', homeScore: null, awayScore: null },
+  { id: 'R16-7', round: 'r16', home: 'TBD', away: 'TBD', homeLabel: 'W R32-15', awayLabel: 'W R32-14', kickoffUTC: ET('2026-07-07', '12:00'), venue: 'Mercedes-Benz Stadium, Atlanta', homeScore: null, awayScore: null },
   { id: 'R16-8', round: 'r16', home: 'TBD', away: 'TBD', homeLabel: 'W R32-13', awayLabel: 'W R32-16', kickoffUTC: PT('2026-07-07', '13:00'), venue: 'BC Place, Vancouver', homeScore: null, awayScore: null },
 
   // ── QUARTER-FINALS ── July 9–11
   { id: 'QF-1', round: 'qf', home: 'TBD', away: 'TBD', homeLabel: 'W R16-1', awayLabel: 'W R16-2', kickoffUTC: ET('2026-07-09', '16:00'), venue: 'Gillette Stadium, Foxborough', homeScore: null, awayScore: null },
-  { id: 'QF-2', round: 'qf', home: 'TBD', away: 'TBD', homeLabel: 'W R16-3', awayLabel: 'W R16-4', kickoffUTC: PT('2026-07-10', '12:00'), venue: 'SoFi Stadium, Inglewood', homeScore: null, awayScore: null },
-  { id: 'QF-3', round: 'qf', home: 'TBD', away: 'TBD', homeLabel: 'W R16-5', awayLabel: 'W R16-6', kickoffUTC: ET('2026-07-11', '17:00'), venue: 'Hard Rock Stadium, Miami Gardens', homeScore: null, awayScore: null },
+  { id: 'QF-2', round: 'qf', home: 'TBD', away: 'TBD', homeLabel: 'W R16-5', awayLabel: 'W R16-6', kickoffUTC: PT('2026-07-10', '12:00'), venue: 'SoFi Stadium, Inglewood', homeScore: null, awayScore: null },
+  { id: 'QF-3', round: 'qf', home: 'TBD', away: 'TBD', homeLabel: 'W R16-3', awayLabel: 'W R16-4', kickoffUTC: ET('2026-07-11', '17:00'), venue: 'Hard Rock Stadium, Miami Gardens', homeScore: null, awayScore: null },
   { id: 'QF-4', round: 'qf', home: 'TBD', away: 'TBD', homeLabel: 'W R16-7', awayLabel: 'W R16-8', kickoffUTC: CT('2026-07-11', '21:00'), venue: 'Arrowhead Stadium, Kansas City', homeScore: null, awayScore: null },
 
   // ── SEMI-FINALS ── July 14–15

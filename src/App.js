@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { MATCHES, GROUP_COLORS, TEAMS } from './data';
+import { KNOCKOUT_MATCHES } from './knockoutData';
 import { useLiveScores, isLivePhase, phaseLabel } from './useLiveScores';
 import { getTimeMode, setTimeMode, fmtTime, fmtDateLong, fmtDateTime, modeLabel } from './timeUtils';
 import Groups from './Groups';
 import MyTeams from './MyTeams';
 import Bracket from './Bracket';
 import GoldenBoot from './GoldenBoot';
-import Tipping from './Tipping';
 import './App.css';
 
 // ── MATCH DETAIL PANEL ──
@@ -21,7 +21,7 @@ function MatchDetail({ match, liveData, onClose, timeMode }) {
   const phase = live?.phase || (match.homeScore !== null ? 'FT' : 'PRE');
   const isLive = isLivePhase(phase);
   const isDone = homeScore !== null && !isLive;
-  const color = GROUP_COLORS[match.group];
+  const color = match.group ? GROUP_COLORS[match.group] : '#7c3aed';
 
   const staticGoalsList = match.goals || [];
   const liveGoalsList = live?.goals || [];
@@ -33,7 +33,9 @@ function MatchDetail({ match, liveData, onClose, timeMode }) {
     <div className="md-overlay" onClick={onClose}>
       <div className="md-panel" onClick={e => e.stopPropagation()}>
         <button className="md-close" onClick={onClose}>✕</button>
-        <div className="md-group-tag" style={{ color }}>GROUP {match.group} · MD{match.matchday}</div>
+        <div className="md-group-tag" style={{ color }}>
+          {match.group ? `GROUP ${match.group} · MD${match.matchday}` : match.roundLabel}
+        </div>
 
         <div className="md-scoreboard">
           <div className="md-team">
@@ -104,7 +106,7 @@ export function MatchRow({ match, liveData, onPress, timeMode }) {
   const isDone = homeScore !== null && !isLive;
   const home = TEAMS[match.home];
   const away = TEAMS[match.away];
-  const color = GROUP_COLORS[match.group];
+  const color = match.group ? GROUP_COLORS[match.group] : '#7c3aed';
   const homeRed = live?.homeRed ?? match.homeRed ?? 0;
   const awayRed = live?.awayRed ?? match.awayRed ?? 0;
 
@@ -127,7 +129,7 @@ export function MatchRow({ match, liveData, onPress, timeMode }) {
         ) : (
           <span className="mr-time">{fmtTime(match.kickoffUTC, timeMode)}</span>
         )}
-        <span className="mr-group" style={{ color }}>GRP {match.group}</span>
+        <span className="mr-group" style={{ color }}>{match.group ? `GRP ${match.group}` : match.roundLabel}</span>
       </div>
 
       <div className="mr-centre">
@@ -171,7 +173,21 @@ export function MatchRow({ match, liveData, onPress, timeMode }) {
 function Schedule({ liveData, onMatchSelect, timeMode }) {
   const now = new Date();
   const todayStr = now.toLocaleDateString('en-AU', { timeZone: timeMode === 'AEST' ? 'Australia/Sydney' : undefined });
-  const sorted = [...MATCHES].sort((a, b) => a.kickoffUTC - b.kickoffUTC);
+
+  const ROUND_LABELS = { r32: 'ROUND OF 32', r16: 'ROUND OF 16', qf: 'QUARTER-FINAL', sf: 'SEMI-FINAL', '3p': '3RD PLACE', f: 'FINAL' };
+  const knockoutAsMatches = KNOCKOUT_MATCHES
+    .filter(m => m.home !== 'TBD' && m.away !== 'TBD')
+    .map(m => ({
+      ...m,
+      group: null,
+      roundLabel: ROUND_LABELS[m.round] || m.round.toUpperCase(),
+      matchday: null,
+      goals: m.goals || [],
+      homeRed: m.homeRed || 0,
+      awayRed: m.awayRed || 0,
+    }));
+
+  const sorted = [...MATCHES, ...knockoutAsMatches].sort((a, b) => a.kickoffUTC - b.kickoffUTC);
 
   const hasTodayGames = sorted.some(m =>
     m.kickoffUTC.toLocaleDateString('en-AU', { timeZone: timeMode === 'AEST' ? 'Australia/Sydney' : undefined }) === todayStr
@@ -218,19 +234,21 @@ function Schedule({ liveData, onMatchSelect, timeMode }) {
       {Object.keys(byDate).length === 0 ? (
         <div className="empty-state"><p>No matches for this filter</p></div>
       ) : (
-        Object.entries(byDate).map(([date, matches]) => (
-          <div key={date} className="date-section">
-            <div className="date-header">{date}</div>
-            <div className="match-list-card">
-              {matches.map((m, i) => (
-                <React.Fragment key={m.id}>
-                  {i > 0 && <div className="match-divider" />}
-                  <MatchRow match={m} liveData={liveData} onPress={() => onMatchSelect(m)} timeMode={timeMode} />
-                </React.Fragment>
-              ))}
+        <div className="schedule-grid">
+          {Object.entries(byDate).map(([date, matches]) => (
+            <div key={date} className="date-section">
+              <div className="date-header">{date}</div>
+              <div className="match-list-card">
+                {matches.map((m, i) => (
+                  <React.Fragment key={m.id}>
+                    {i > 0 && <div className="match-divider" />}
+                    <MatchRow match={m} liveData={liveData} onPress={() => onMatchSelect(m)} timeMode={timeMode} />
+                  </React.Fragment>
+                ))}
+              </div>
             </div>
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );
@@ -243,11 +261,34 @@ export default function App() {
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [timeMode, setTimeModeState] = useState(getTimeMode());
   const { liveData, status, refetch } = useLiveScores();
+  const headerRef = React.useRef(null);
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(t);
   }, []);
+
+  // Keep CSS variables in sync with the header's real rendered height AND the
+  // viewport orientation, so sticky rows beneath it never overlap content,
+  // on any device, in either portrait or landscape.
+  useEffect(() => {
+    if (!headerRef.current) return;
+    const setVars = () => {
+      document.documentElement.style.setProperty('--header-h', `${headerRef.current.offsetHeight}px`);
+      const isLandscape = window.innerWidth > window.innerHeight;
+      document.documentElement.classList.toggle('is-landscape', isLandscape);
+    };
+    setVars();
+    const ro = new ResizeObserver(setVars);
+    ro.observe(headerRef.current);
+    window.addEventListener('resize', setVars);
+    window.addEventListener('orientationchange', setVars);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', setVars);
+      window.removeEventListener('orientationchange', setVars);
+    };
+  }, [timeMode]);
 
   const toggleTimeMode = () => {
     const next = timeMode === 'AEST' ? 'LOCAL' : 'AEST';
@@ -266,7 +307,7 @@ export default function App() {
         <MatchDetail match={selectedMatch} liveData={liveData} onClose={() => setSelectedMatch(null)} timeMode={timeMode} />
       )}
 
-      <header className="app-header">
+      <header className="app-header" ref={headerRef}>
         <div className="app-header-inner">
           <div>
             <h1 className="app-title">World Cup 2026</h1>
@@ -277,12 +318,10 @@ export default function App() {
             <button className={`status-btn ${statusClass}`} onClick={refetch}>
               <span className="status-dot" /> {statusText}
             </button>
+            <button className="time-toggle-btn" onClick={toggleTimeMode} title="Switch time display">
+              🌐 {timeMode === 'AEST' ? 'AEST' : 'Local'}
+            </button>
           </div>
-        </div>
-        <div className="time-toggle-row">
-          <button className="time-toggle-btn" onClick={toggleTimeMode}>
-            🌐 Showing {timeMode === 'AEST' ? 'AEST' : 'Local time'} · Tap to switch to {timeMode === 'AEST' ? 'your device time' : 'AEST'}
-          </button>
         </div>
       </header>
 
@@ -292,7 +331,6 @@ export default function App() {
         {tab === 'bracket'  && <Bracket liveData={liveData} timeMode={timeMode} />}
         {tab === 'myteams'  && <MyTeams liveData={liveData} onMatchSelect={setSelectedMatch} timeMode={timeMode} />}
         {tab === 'golden'   && <GoldenBoot liveData={liveData} />}
-        {tab === 'tipping'  && <Tipping liveData={liveData} />}
       </main>
 
       <nav className="tab-bar">
@@ -302,7 +340,6 @@ export default function App() {
           { id: 'bracket',  icon: '🏆', label: 'Bracket'  },
           { id: 'myteams',  icon: '★',  label: 'My Teams' },
           { id: 'golden',   icon: '👟', label: 'Scorers'  },
-          { id: 'tipping',  icon: '🎯', label: 'Tipping'  },
         ].map(t => (
           <button key={t.id} className={`tab-item ${tab === t.id ? 'tab-item--active' : ''}`} onClick={() => setTab(t.id)}>
             <span className="tab-icon">{t.icon}</span>

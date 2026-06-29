@@ -3,6 +3,7 @@ import { TEAMS } from './data';
 import { KNOCKOUT_MATCHES } from './knockoutData';
 import { isLivePhase, phaseLabel } from './useLiveScores';
 import { fmtDateTime, modeLabel } from './timeUtils';
+import PathToFinal from './PathToFinal';
 import './Bracket.css';
 
 const ROUNDS = ['r32','r16','qf','sf','f'];
@@ -24,55 +25,71 @@ function TeamSlot({ code, label, score, win, isLive }) {
 
 export default function Bracket({ liveData, timeMode }) {
   const [round, setRound] = useState('r32');
+  const [view, setView] = useState('path'); // 'path' | 'list'
   const all = [...ROUNDS, '3p'];
   const matches = KNOCKOUT_MATCHES.filter(m => m.round === round);
 
   return (
     <div className="bracket-view">
-      <div className="br-tabs">
-        {all.map(r => (
-          <button key={r}
-            className={`br-pill ${round === r ? 'br-pill--on' : ''}`}
-            style={round === r ? { '--rc': ROUND_COLORS[r] } : {}}
-            onClick={() => setRound(r)}>
-            {ROUND_NAMES[r]}
-          </button>
-        ))}
+      <div className="br-view-toggle">
+        <button className={`br-view-btn ${view === 'path' ? 'br-view-btn--on' : ''}`} onClick={() => setView('path')}>
+          🏆 Path to Final
+        </button>
+        <button className={`br-view-btn ${view === 'list' ? 'br-view-btn--on' : ''}`} onClick={() => setView('list')}>
+          📋 List view
+        </button>
       </div>
 
-      <div className="br-list">
-        {matches.length === 0 ? (
-          <div className="br-empty">
-            <p>Matchups confirmed once earlier rounds finish</p>
+      {view === 'path' ? (
+        <PathToFinal liveData={liveData} timeMode={timeMode} />
+      ) : (
+        <>
+          <div className="br-tabs">
+            {all.map(r => (
+              <button key={r}
+                className={`br-pill ${round === r ? 'br-pill--on' : ''}`}
+                style={round === r ? { '--rc': ROUND_COLORS[r] } : {}}
+                onClick={() => setRound(r)}>
+                {ROUND_NAMES[r]}
+              </button>
+            ))}
           </div>
-        ) : (
-          matches.map(m => {
-            const key = `${m.home}_${m.away}`;
-            const live = liveData?.[key];
-            const hs = live?.homeScore ?? m.homeScore;
-            const as = live?.awayScore ?? m.awayScore;
-            const phase = live?.phase || (hs !== null ? 'FT' : 'PRE');
-            const isLive = isLivePhase(phase);
-            const hWin = hs !== null && hs > as;
-            const aWin = as !== null && as > hs;
-            const color = ROUND_COLORS[m.round];
-            return (
-              <div key={m.id} className="br-card" style={{ '--rc': color }}>
-                <div className="br-card-date">
-                  {fmtDateTime(m.kickoffUTC, timeMode)} {modeLabel(timeMode)}
-                  {isLive && <span className="br-live-tag"> · ● {phaseLabel(phase)}</span>}
-                </div>
-                <TeamSlot code={m.home} label={m.homeLabel} score={hs} win={hWin} isLive={isLive} />
-                <div className="br-card-divider" />
-                <TeamSlot code={m.away} label={m.awayLabel} score={as} win={aWin} isLive={isLive} />
-              </div>
-            );
-          })
-        )}
-      </div>
 
-      {round === 'f' && (
-        <div className="br-final-note">🏆 FIFA World Cup 2026 Final — 19 July, MetLife Stadium</div>
+          <div className="br-list">
+            {matches.length === 0 ? (
+              <div className="br-empty">
+                <p>Matchups confirmed once earlier rounds finish</p>
+              </div>
+            ) : (
+              matches.map(m => {
+                const key = `${m.home}_${m.away}`;
+                const live = liveData?.[key];
+                const hs = live?.homeScore ?? m.homeScore;
+                const as = live?.awayScore ?? m.awayScore;
+                const phase = live?.phase || (hs !== null ? 'FT' : 'PRE');
+                const isLive = isLivePhase(phase);
+                const hWin = hs !== null && hs > as;
+                const aWin = as !== null && as > hs;
+                const color = ROUND_COLORS[m.round];
+                return (
+                  <div key={m.id} className="br-card" style={{ '--rc': color }}>
+                    <div className="br-card-date">
+                      {fmtDateTime(m.kickoffUTC, timeMode)} {modeLabel(timeMode)}
+                      {isLive && <span className="br-live-tag"> · ● {phaseLabel(phase)}</span>}
+                    </div>
+                    <TeamSlot code={m.home} label={m.homeLabel} score={hs} win={hWin} isLive={isLive} />
+                    <div className="br-card-divider" />
+                    <TeamSlot code={m.away} label={m.awayLabel} score={as} win={aWin} isLive={isLive} />
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {round === 'f' && (
+            <div className="br-final-note">🏆 FIFA World Cup 2026 Final — 19 July, MetLife Stadium</div>
+          )}
+        </>
       )}
     </div>
   );

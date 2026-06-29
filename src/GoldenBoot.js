@@ -1,24 +1,32 @@
 import React from 'react';
 import { MATCHES, TEAMS } from './data';
+import { KNOCKOUT_MATCHES } from './knockoutData';
 import './GoldenBoot.css';
 
 export function calcGoldenBoot(liveData = {}) {
   const scorers = {};
-  MATCHES.forEach(m => {
-    const key = `${m.home}_${m.away}`;
-    const staticGoals = m.goals || [];
-    const liveGoals = liveData[key]?.goals || [];
-    // Prefer verified data.js goals; fall back to live API only if none entered yet
-    const goals = staticGoals.length > 0 ? staticGoals : liveGoals;
-    goals.forEach(g => {
-      if (g.og) return;
-      const k = `${g.player}__${g.team}`;
-      if (!scorers[k]) scorers[k] = { player: g.player, team: g.team, goals: 0, pens: 0, matches: new Set() };
-      scorers[k].goals++;
-      if (g.pen) scorers[k].pens++;
-      scorers[k].matches.add(m.id);
+
+  const tally = (matches) => {
+    matches.forEach(m => {
+      const key = `${m.home}_${m.away}`;
+      const staticGoals = m.goals || [];
+      const liveGoals = liveData[key]?.goals || [];
+      // Prefer verified static goals; fall back to live API only if none entered yet
+      const goals = staticGoals.length > 0 ? staticGoals : liveGoals;
+      goals.forEach(g => {
+        if (g.og) return;
+        const k = `${g.player}__${g.team}`;
+        if (!scorers[k]) scorers[k] = { player: g.player, team: g.team, goals: 0, pens: 0, matches: new Set() };
+        scorers[k].goals++;
+        if (g.pen) scorers[k].pens++;
+        scorers[k].matches.add(m.id);
+      });
     });
-  });
+  };
+
+  tally(MATCHES);
+  tally(KNOCKOUT_MATCHES);
+
   return Object.values(scorers)
     .sort((a, b) => b.goals - a.goals || a.pens - b.pens)
     .map(s => ({ ...s, matches: s.matches.size }));
@@ -69,7 +77,7 @@ export default function GoldenBoot({ liveData = {} }) {
                 </div>
                 <div className="gb-goals">
                   <span className="gb-goals-num">{s.goals}</span>
-                  <span className="gb-goals-label">goal{s.goals !== 1 ? 's' : ''}</span>
+                  <span className="gb-goals-label">in {s.matches} match{s.matches !== 1 ? 'es' : ''}</span>
                 </div>
               </div>
             );
