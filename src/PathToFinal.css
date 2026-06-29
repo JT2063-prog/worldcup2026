@@ -97,7 +97,11 @@ html.is-landscape .ptf-view { padding: 16px 0 24px; }
 .ptf-match--compact .ptf-score { font-size: 11px; }
 .ptf-match--compact .ptf-match-time { padding: 3px 6px; font-size: 8px; }
 
-/* ── FULL BRACKET (landscape, all 4 quarters at once) ── */
+/* Mirrored quarters (B and D): QF sits on the inner edge (toward centre),
+   R32 sits on the outer edge — visually narrowing into the SF/Final like a real bracket.
+   Columns are already reversed in JSX; just keep title centred, no extra flip needed. */
+.ptf-quarter-rounds--mirror { flex-direction: row; }
+
 .ptf-view--landscape { padding: 14px 16px 24px; max-width: 100%; }
 
 .ptf-full {

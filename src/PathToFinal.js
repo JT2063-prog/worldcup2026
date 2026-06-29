@@ -107,29 +107,33 @@ function MatchBox({ matchId, byId, accent, timeMode, compact }) {
   );
 }
 
-function QuarterBracket({ quarter, byId, timeMode, compact }) {
+function QuarterBracket({ quarter, byId, timeMode, compact, mirror }) {
+  const cols = [
+    <div className="ptf-mini-col" key="r32">
+      <div className="ptf-mini-title">R32</div>
+      <div className="ptf-mini-matches ptf-mini-matches--r32">
+        {quarter.r32.map(id => <MatchBox key={id} matchId={id} byId={byId} accent={quarter.accent} timeMode={timeMode} compact={compact} />)}
+      </div>
+    </div>,
+    <div className="ptf-mini-col" key="r16">
+      <div className="ptf-mini-title">R16</div>
+      <div className="ptf-mini-matches ptf-mini-matches--r16">
+        {quarter.r16.map(id => <MatchBox key={id} matchId={id} byId={byId} accent={quarter.accent} timeMode={timeMode} compact={compact} />)}
+      </div>
+    </div>,
+    <div className="ptf-mini-col" key="qf">
+      <div className="ptf-mini-title">QF</div>
+      <div className="ptf-mini-matches ptf-mini-matches--qf">
+        {quarter.qf.map(id => <MatchBox key={id} matchId={id} byId={byId} accent={quarter.accent} timeMode={timeMode} compact={compact} />)}
+      </div>
+    </div>,
+  ];
+
   return (
     <div className="ptf-quarter" style={{ '--ac': quarter.accent }}>
       <div className="ptf-quarter-label">{quarter.label}</div>
-      <div className="ptf-quarter-rounds">
-        <div className="ptf-mini-col">
-          <div className="ptf-mini-title">R32</div>
-          <div className="ptf-mini-matches ptf-mini-matches--r32">
-            {quarter.r32.map(id => <MatchBox key={id} matchId={id} byId={byId} accent={quarter.accent} timeMode={timeMode} compact={compact} />)}
-          </div>
-        </div>
-        <div className="ptf-mini-col">
-          <div className="ptf-mini-title">R16</div>
-          <div className="ptf-mini-matches ptf-mini-matches--r16">
-            {quarter.r16.map(id => <MatchBox key={id} matchId={id} byId={byId} accent={quarter.accent} timeMode={timeMode} compact={compact} />)}
-          </div>
-        </div>
-        <div className="ptf-mini-col">
-          <div className="ptf-mini-title">QF</div>
-          <div className="ptf-mini-matches ptf-mini-matches--qf">
-            {quarter.qf.map(id => <MatchBox key={id} matchId={id} byId={byId} accent={quarter.accent} timeMode={timeMode} compact={compact} />)}
-          </div>
-        </div>
+      <div className={`ptf-quarter-rounds ${mirror ? 'ptf-quarter-rounds--mirror' : ''}`}>
+        {mirror ? cols.slice().reverse() : cols}
       </div>
     </div>
   );
@@ -151,7 +155,7 @@ function FullBracket({ byId, timeMode, champion }) {
           <div className="ptf-full-converge-label">SF 1</div>
           <MatchBox matchId="SF-1" byId={byId} accent="#dc2626" timeMode={timeMode} compact />
         </div>
-        <QuarterBracket quarter={qb} byId={byId} timeMode={timeMode} compact />
+        <QuarterBracket quarter={qb} byId={byId} timeMode={timeMode} compact mirror />
       </div>
 
       <div className="ptf-full-final">
@@ -170,7 +174,7 @@ function FullBracket({ byId, timeMode, champion }) {
           <div className="ptf-full-converge-label">SF 2</div>
           <MatchBox matchId="SF-2" byId={byId} accent="#dc2626" timeMode={timeMode} compact />
         </div>
-        <QuarterBracket quarter={qd} byId={byId} timeMode={timeMode} compact />
+        <QuarterBracket quarter={qd} byId={byId} timeMode={timeMode} compact mirror />
       </div>
     </div>
   );
