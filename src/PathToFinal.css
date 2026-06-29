@@ -87,3 +87,59 @@ html.is-landscape .ptf-view { padding: 16px 0 24px; }
   text-align: center; font-size: 11px; color: var(--text-muted);
   margin: 12px 20px 0;
 }
+
+/* ── COMPACT MODE (used inside the full landscape bracket) ── */
+.ptf-match--compact { border-top-width: 2px; }
+.ptf-match--compact .ptf-match-row { padding: 5px 6px; }
+.ptf-pill--compact { gap: 4px; }
+.ptf-pill--compact .ptf-flag { font-size: 12px; }
+.ptf-pill--compact .ptf-name { font-size: 10px; }
+.ptf-match--compact .ptf-score { font-size: 11px; }
+.ptf-match--compact .ptf-match-time { padding: 3px 6px; font-size: 8px; }
+
+/* ── FULL BRACKET (landscape, all 4 quarters at once) ── */
+.ptf-view--landscape { padding: 14px 16px 24px; max-width: 100%; }
+
+.ptf-full {
+  display: flex; flex-direction: column; gap: 0; align-items: stretch;
+}
+
+.ptf-full-row {
+  display: grid;
+  grid-template-columns: 1fr 130px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Each quarter inside the full view loses its own outer padding/margin
+   since the parent grid already spaces things out */
+.ptf-full-row .ptf-quarter { padding: 0; margin-bottom: 0; }
+.ptf-full-row .ptf-quarter-label { font-size: 11px; margin-bottom: 8px; }
+.ptf-full-row .ptf-quarter-rounds { gap: 6px; max-width: none; margin: 0; }
+.ptf-full-row .ptf-mini-title { font-size: 8px; margin-bottom: 5px; }
+.ptf-full-row .ptf-mini-matches { gap: 5px; }
+.ptf-full-row .ptf-mini-matches--r16 { padding: 10px 0; }
+.ptf-full-row .ptf-mini-matches--qf { padding: 26px 0; }
+
+.ptf-full-converge {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding-top: 22px;
+}
+.ptf-full-converge-label {
+  font-size: 10px; font-weight: 800; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.6px;
+}
+
+.ptf-full-final {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 16px 0; max-width: 200px; margin: 4px auto;
+}
+.ptf-full-final .ptf-match { width: 100%; }
+.ptf-full-champion {
+  font-size: 12px; font-weight: 700; color: var(--gold);
+  background: var(--gold-bg); border: 1px solid #fde68a;
+  border-radius: 20px; padding: 5px 12px; white-space: nowrap;
+}
+
+.ptf-full-row--top .ptf-full-converge { align-self: end; }
+.ptf-full-row--bottom .ptf-full-converge { align-self: start; }
